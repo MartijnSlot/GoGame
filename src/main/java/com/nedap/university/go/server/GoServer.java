@@ -104,9 +104,9 @@ public class GoServer extends Thread {
 						ClientHandler ch1 = pendingClients.get(dimBoard).get(n);
 						ClientHandler ch2 = pendingClients.get(dimBoard).get(1-n);
 						pendingClients.remove(dimBoard);
-						new SingleGameServer(ch1, ch2, dim);
 						ch1.setClientStatus(ClientStatus.INGAME);
 						ch2.setClientStatus(ClientStatus.INGAME);
+						new SingleGameServer(ch1, ch2, dim);
 					} break;
 				} break;
 			}
@@ -115,15 +115,19 @@ public class GoServer extends Thread {
 	
 	/**
 	 * removes a client from the server clientlist
-	 * @param ch
+	 * @param clientHandler
 	 */
-	public void removeClient(ClientHandler ch) {
+	public void removeClient(ClientHandler clientHandler) {
 		try {
-			clientHandlerMap.remove(ch);
+			clientHandlerMap.remove(clientHandler);
 			socket.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		} 
+	}
+
+	public void waitingToInitial(ClientHandler clientHandler) {
+		pendingClients.get(clientHandler.getDim()).remove(clientHandler);
 	}
 
 }

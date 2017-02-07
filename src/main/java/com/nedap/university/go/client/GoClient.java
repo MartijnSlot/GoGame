@@ -32,10 +32,12 @@ public class GoClient extends Thread {
     public void run() {
         serverHandler = new ServerHandler(this, socket);
         serverHandler.start();
-        try {
-            this.handleInput();
-        } catch (IOException e) {
-            e.printStackTrace();
+        while(inputFromPlayer != null) {
+            try {
+                this.handleInput();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -54,7 +56,6 @@ public class GoClient extends Thread {
      * @throws IOException
      */
     public void handleInput() throws IOException {
-        System.out.println("Please enter PLAYER + 'yourname'");
         do {
             String message = inputFromPlayer.readLine();
             if (message != null) {
@@ -83,9 +84,12 @@ public class GoClient extends Thread {
                     this.shutdown();
                     break;
                 } else if (message.startsWith("CANCEL") && inputMessage.length == 1) {
-                    serverHandler.shutdown();
+                    serverHandler.cancel(message);
                     break;
                 } else if (message.isEmpty()) {
+                    System.out.println("WARNING " + message + " is invalid input.");
+                    break;
+                } else {
                     System.out.println("WARNING " + message + " is invalid input.");
                     break;
                 }
@@ -140,7 +144,6 @@ public class GoClient extends Thread {
                 return false;
             }
         }
-        System.out.println("Board size OK: " + input);
         return true;
     }
 

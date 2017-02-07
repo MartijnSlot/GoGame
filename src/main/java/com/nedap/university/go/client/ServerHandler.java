@@ -177,25 +177,25 @@ public class ServerHandler extends Thread {
     /**
      * checks what to do when the initial command is given by the GoClient
      *
-     * @param string
-     * @param string2
+     * @param player
+     * @param name
      * @throws IOException
      */
-    public void initName(String string, String string2) throws IOException {
-        clientName = string2;
-        writeToServer(string + " " + string2);
+    public void initName(String player, String name) throws IOException {
+        clientName = name;
+        writeToServer(player + " " + name);
     }
 
     /**
      * checks what to do when the initial command is given by the GoClient
      *
-     * @param string
+     * @param go
      * @param boardSize
      * @throws IOException
      */
-    public void initGame(String string, String boardSize) throws IOException {
+    public void initGame(String go, String boardSize) throws IOException {
         dim = Integer.parseInt(boardSize);
-        writeToServer(string + " " + boardSize);
+        writeToServer(go + " " + boardSize);
     }
 
     /**
@@ -248,4 +248,7 @@ public class ServerHandler extends Thread {
         System.out.println(clientName + ": " + chat);
     }
 
+    public void cancel(String cancel) throws IOException {
+        writeToServer(cancel);
+    }
 }

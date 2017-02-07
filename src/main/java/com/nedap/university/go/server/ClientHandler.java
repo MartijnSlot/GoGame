@@ -54,10 +54,10 @@ public class ClientHandler extends Thread {
                 switch (clientStatus) {
                     case PREGAME:
                         preGameInput();
-                        writeToClient("CHAT ClientStatus: " + clientStatus);
+                        writeToClient("ClientStatus " + clientStatus);
                     case WAITING:
                         waitingInput();
-                        writeToClient("CHAT ClientStatus: " + clientStatus);
+                        writeToClient("ClientStatus " + clientStatus);
                     default:
                         break;
                 }
@@ -91,7 +91,7 @@ public class ClientHandler extends Thread {
      *
      * @return String
      */
-    private String getClientName() {
+    public String getClientName() {
         return clientName;
     }
 
@@ -100,7 +100,7 @@ public class ClientHandler extends Thread {
      *
      * @return int
      */
-    private int getDim() {
+    public int getDim() {
         return dim;
     }
 
@@ -134,42 +134,46 @@ public class ClientHandler extends Thread {
      */
     private void preGameInput() throws IOException {
 
+        writeToClient("Please enter command PLAYER name, GO dim, CHAT message or EXIT: ");
         String message = inputFromClient.readLine();
-        while (message != null && clientStatus == ClientStatus.PREGAME) {
+        while (message != null) {
             String inputMessage[] = message.split(" ");
             if (message.startsWith("PLAYER") && inputMessage.length == 2 && checkName(inputMessage[1])) {
                 ;
                 clientName = inputMessage[1];
-                writeToClient("Your name is: " + clientName);
-                System.out.println("Name entered: " + clientName);
+                writeToClient("Your name is " + clientName);
+                System.out.println(clientName + " has entered the arena!");
                 break;
             } else if (message.startsWith("GO") && inputMessage.length == 2 && checkDim(inputMessage[1])) {
                 setDim(Integer.parseInt(inputMessage[1]));
-                server.clientEntry(this, dim);
                 writeToClient("Dimension entered: " + dim);
-                System.out.println("Dimension entered: " + dim);
+                System.out.println("Game waiting: " + clientName + dim);
+                server.clientEntry(this, dim);
                 break;
             } else if (message.startsWith("CHAT")) {
                 server.chatToAllPlayers(clientName + message);
+                System.out.println(clientName+ ": " + message);
                 break;
             } else if (message.startsWith("EXIT") && inputMessage.length == 1) {
+                System.out.println(clientName + " has disconnected");
                 try {
                     this.join();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
                     outputToClient.close();
                     inputFromClient.close();
                     server.removeClient(this);
+                } catch (InterruptedException e) {
+                    System.out.println("disconnection failed: restart server.");
                 }
             } else {
                 outputToClient.write("WARNING PreGameInput: Must...resist...kicking...you." + message + " is invalid input. "
-                        + "Please enter PLAYER name*, GO dim, CHAT message or EXIT: " + clientStatus);
+                        + "Please enter PLAYER name, GO dim, CHAT message or EXIT: " + clientStatus);
                 outputToClient.newLine();
                 outputToClient.flush();
                 break;
             }
         }
     }
+
 
     /**
      * Possible inputs from the client with the status WAITING and the following actions
@@ -182,19 +186,25 @@ public class ClientHandler extends Thread {
         while (message != null && clientStatus == ClientStatus.WAITING) {
             String inputMessage[] = message.split(" ");
             if (message.startsWith("CHAT")) {
+                server.chatToAllPlayers(clientName + message);
                 System.out.println(message);
                 break;
-//				server.chatToAllPlayers(clientName + message);
             } else if (message.startsWith("EXIT") && inputMessage.length == 1) {
+                System.out.println(clientName + " has disconnected");
                 try {
                     this.join();
+                    outputToClient.close();
+                    inputFromClient.close();
+                    server.removeClient(this);
                 } catch (InterruptedException e) {
-                    e.printStackTrace();
+                    System.out.println("disconnection failed: restart server.");
                 }
-                outputToClient.close();
-                inputFromClient.close();
-                server.removeClient(this);
-            } else {
+            } else if (message.startsWith("CANCEL") && inputMessage.length == 1) {
+                System.out.println(clientName + " has disconnected");
+                server.waitingToInitial(this);
+                clientStatus = ClientStatus.PREGAME;
+            }
+            else {
                 outputToClient.write("WARNING waitingInput: Must...resist...kicking...you. " + message + " is invalid input. "
                         + "Please enter 'CHAT something' or EXIT: " + clientStatus);
                 outputToClient.newLine();
@@ -223,9 +233,7 @@ public class ClientHandler extends Thread {
                 sgs.executeTurnPass();
             } else if (message.startsWith("TABLEFLIP") && inputMessage.length == 1) {
                 sgs.executeTurnTableflip();
-                outputToClient.write("TABLEFLIPPED" + message);
-                outputToClient.newLine();
-                outputToClient.flush();
+                writeToClient("TABLEFLIPPED" + message);
                 playAgain();
             } else if (message.startsWith("CHAT")) {
                 sgs.chatToOtherPlayer(message);
@@ -290,7 +298,6 @@ public class ClientHandler extends Thread {
                     ", name requirements: \n- name < 20 characters \n- name may only consist out of digits and letters");
             return false;
         }
-        writeToClient("CHAT server: Your name is: " + name);
         return true;
     }
 
@@ -309,6 +316,7 @@ public class ClientHandler extends Thread {
             parsedInput = Integer.parseInt(input);
             if (parsedInput % 2 == 0 || parsedInput < 5 || parsedInput > 131) {
                 dimIsOk = false;
+                System.out.println("dimension is not OK");
             }
         }
         return dimIsOk;
