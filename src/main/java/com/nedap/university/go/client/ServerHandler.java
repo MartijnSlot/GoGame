@@ -61,27 +61,16 @@ public class ServerHandler extends Thread {
      *
      * @return String
      */
-    protected String getClientName() {
+    public String getClientName() {
         return clientName;
-    }
-
-
-    /**
-     * getter for the dimension
-     *
-     * @return int
-     */
-    public int getDim() {
-        return dim;
     }
 
     /**
      * Handles all incoming messages from the clientHandler
      *
-     * @param fromServer
-     * @throws IOException
+     * @param fromServer message from server
      */
-    private synchronized void handleGame(String fromServer) throws IOException {
+    private synchronized void handleGame(String fromServer) {
 
         while (fromServer != null) {
             String serverInputMessage[] = fromServer.split(" ");
@@ -100,7 +89,7 @@ public class ServerHandler extends Thread {
                     opponent = clientName;
                 }
                 dim = Integer.parseInt(serverInputMessage[3]);
-				game = new Game(player, opponent, dim); //ONLY 1 GUI can be started at the same time. FIX.
+				game = new Game(player, opponent, dim);
                 break;
 
             } else if (fromServer.startsWith("VALID")) {
@@ -137,8 +126,8 @@ public class ServerHandler extends Thread {
                 int scoreBlack = Integer.parseInt(serverInputMessage[1]);
                 int scoreWhite = Integer.parseInt(serverInputMessage[2]);
                 System.out.println("Score black: " + scoreBlack + "\nScore white: " + scoreWhite);
-            } else {
-                System.out.println("WARNING Must...resist...kicking...you. \n Message " + fromServer + " is invalid input.");
+            } else if (!fromServer.isEmpty()){
+                System.out.println("WARNING in the input from server. " + fromServer + " is invalid input.");
             }
         }
     }
@@ -241,7 +230,7 @@ public class ServerHandler extends Thread {
     /**
      * passes 'TABLEFLIP' to the server, given by the client
      *
-     * @param pass
+     * @param tableflip
      * @throws IOException
      */
     public void tableflip(String tableflip) throws IOException {
@@ -251,7 +240,7 @@ public class ServerHandler extends Thread {
     /**
      * passes on the 'CHAT' given by the client to the server
      *
-     * @param pass
+     * @param chat
      * @throws IOException
      */
     public void chat(String chat) throws IOException {

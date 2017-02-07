@@ -61,24 +61,33 @@ public class GoClient extends Thread {
                 String inputMessage[] = message.split(" ");
                 if (message.startsWith("PLAYER") && inputMessage.length == 2 && checkName(inputMessage[1])) {
                     serverHandler.initName(inputMessage[0], inputMessage[1]);
+                    break;
                 } else if (message.startsWith("GO") && inputMessage.length == 2 && checkDim(inputMessage[1]) && serverHandler.getClientName() != null) {
                     serverHandler.initGame(inputMessage[0], inputMessage[1]);
+                    break;
                 } else if (message.startsWith("MOVE") && isParsable(inputMessage[1]) && isParsable(inputMessage[2]) && serverHandler.getClientName() != null) {
                     serverHandler.move(inputMessage[0], inputMessage[1], inputMessage[2]);
+                    break;
                 } else if (message.startsWith("PASS") && inputMessage.length == 1 && serverHandler.getClientName() != null) {
                     serverHandler.pass(inputMessage[0]);
+                    break;
                 } else if (message.startsWith("TABLEFLIP") && inputMessage.length == 1 && serverHandler.getClientName() != null) {
                     serverHandler.tableflip(message);
+                    break;
                 } else if (message.startsWith("CHAT")) {
                     serverHandler.chat(message);
+                    break;
                 } else if (message.startsWith("EXIT") && inputMessage.length == 1) {
                     serverHandler.writeToServer(message);
                     serverHandler.shutdown();
                     this.shutdown();
+                    break;
                 } else if (message.startsWith("CANCEL") && inputMessage.length == 1) {
                     serverHandler.shutdown();
-                } else {
-                    System.out.println("WARNING Must...resist...kicking...you. \n Message " + message + " is invalid input.");
+                    break;
+                } else if (message.isEmpty()) {
+                    System.out.println("WARNING " + message + " is invalid input.");
+                    break;
                 }
             }
         } while (true);
