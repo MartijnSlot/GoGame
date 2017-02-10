@@ -147,7 +147,7 @@ public class ClientHandler extends Thread {
             } else if (message.startsWith("GO") && inputMessage.length == 2 && checkDim(inputMessage[1])) {
                 setDim(Integer.parseInt(inputMessage[1]));
                 writeToClient("Dimension entered: " + dim);
-                System.out.println("Game waiting: " + clientName + dim);
+                System.out.println("Game waiting: " + clientName + " " + dim);
                 server.clientEntry(this, dim);
                 break;
             } else if (message.startsWith("CHAT")) {

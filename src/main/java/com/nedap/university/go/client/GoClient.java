@@ -70,13 +70,18 @@ public class GoClient extends Thread {
                     serverHandler.move(inputMessage[0], inputMessage[1], inputMessage[2]);
                     break;
                 } else if (message.startsWith("PASS") && inputMessage.length == 1 && serverHandler.getClientName() != null) {
-                    serverHandler.pass(inputMessage[0]);
+                    serverHandler.toServer(inputMessage[0]);
                     break;
                 } else if (message.startsWith("TABLEFLIP") && inputMessage.length == 1 && serverHandler.getClientName() != null) {
-                    serverHandler.tableflip(message);
+                    serverHandler.toServer(message);
                     break;
                 } else if (message.startsWith("CHAT")) {
-                    serverHandler.chat(message);
+                    if (serverHandler.getClientName() == null) {
+                        System.out.println("Please enter PLAYER name first.");
+                        break;
+                    }
+                    serverHandler.toServer(message);
+
                     break;
                 } else if (message.startsWith("EXIT") && inputMessage.length == 1) {
                     serverHandler.writeToServer(message);
@@ -84,7 +89,7 @@ public class GoClient extends Thread {
                     this.shutdown();
                     break;
                 } else if (message.startsWith("CANCEL") && inputMessage.length == 1) {
-                    serverHandler.cancel(message);
+                    serverHandler.toServer(message);
                     break;
                 } else if (message.isEmpty()) {
                     System.out.println("WARNING " + message + " is invalid input.");

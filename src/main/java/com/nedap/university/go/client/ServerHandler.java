@@ -219,36 +219,11 @@ public class ServerHandler extends Thread {
     /**
      * passes 'PASS' to the server, given by the client
      *
-     * @param pass
+     * @param toServer
      * @throws IOException
      */
-    public void pass(String pass) throws IOException {
-        writeToServer(pass);
+    public void toServer(String toServer) throws IOException {
+        writeToServer(toServer);
 
-    }
-
-    /**
-     * passes 'TABLEFLIP' to the server, given by the client
-     *
-     * @param tableflip
-     * @throws IOException
-     */
-    public void tableflip(String tableflip) throws IOException {
-        writeToServer(tableflip);
-    }
-
-    /**
-     * passes on the 'CHAT' given by the client to the server
-     *
-     * @param chat
-     * @throws IOException
-     */
-    public void chat(String chat) throws IOException {
-        writeToServer(chat);
-        System.out.println(clientName + ": " + chat);
-    }
-
-    public void cancel(String cancel) throws IOException {
-        writeToServer(cancel);
     }
 }
