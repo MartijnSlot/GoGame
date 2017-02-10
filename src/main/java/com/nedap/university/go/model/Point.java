@@ -16,14 +16,8 @@ public class Point {
 		
 	}
 	
-	/**
-	 * getter for the Stone
-	 * @return Stone
-	 */
-	public Stone getStone() {
+	Stone getStone() {
 		return stone;
 	}
-	
-	
 
 }

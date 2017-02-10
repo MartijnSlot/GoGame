@@ -55,9 +55,11 @@ public class ClientHandler extends Thread {
                     case PREGAME:
                         preGameInput();
                         writeToClient("ClientStatus " + clientStatus);
+                        break;
                     case WAITING:
                         waitingInput();
                         writeToClient("ClientStatus " + clientStatus);
+                        break;
                     default:
                         break;
                 }
@@ -67,61 +69,36 @@ public class ClientHandler extends Thread {
         }
     }
 
-    /**
-     * setter for clientStatus
-     *
-     * @param cs
-     */
-    public void setClientStatus(ClientStatus cs) {
+    void setClientStatus(ClientStatus cs) {
         this.clientStatus = cs;
 
     }
 
-    /**
-     * getter for clientStatus
-     *
-     * @return ClientStatus
-     */
-    public ClientStatus getClientStatus() {
+    ClientStatus getClientStatus() {
         return clientStatus;
     }
 
-    /**
-     * getter for clientName
-     *
-     * @return String
-     */
-    public String getClientName() {
+    String getClientName() {
         return clientName;
     }
 
-    /**
-     * getter for the board dimension
-     *
-     * @return int
-     */
-    public int getDim() {
+    int getDim() {
         return dim;
     }
 
-    /**
-     * setter for the board dimension
-     *
-     * @param
-     */
-    public void setDim(int d) {
+     private void setDim(int d) {
         dim = d;
     }
 
     /**
-     * sends out the READY message with the pre-determined parameters.
+     * sends out the READY message with playercolor, opponentname and boardsize.
      *
      * @param color
      * @param opponent
      * @param boardSize
      * @throws IOException
      */
-    public synchronized void sendReady(String color, String opponent, int boardSize) throws IOException {
+    synchronized void sendReady(String color, String opponent, int boardSize) throws IOException {
         outputToClient.write("READY " + color + " " + opponent + " " + boardSize);
         outputToClient.newLine();
         outputToClient.flush();
@@ -138,8 +115,7 @@ public class ClientHandler extends Thread {
         String message = inputFromClient.readLine();
         while (message != null) {
             String inputMessage[] = message.split(" ");
-            if (message.startsWith("PLAYER") && inputMessage.length == 2 && checkName(inputMessage[1])) {
-                ;
+            if (message.startsWith("PLAYER") && inputMessage.length == 2 && checkName(inputMessage[1]) && clientName == null) {
                 clientName = inputMessage[1];
                 writeToClient("Your name is " + clientName);
                 System.out.println(clientName + " has entered the arena!");
@@ -166,7 +142,7 @@ public class ClientHandler extends Thread {
                 }
             } else {
                 outputToClient.write("WARNING PreGameInput: Must...resist...kicking...you." + message + " is invalid input. "
-                        + "Please enter PLAYER name, GO dim, CHAT message or EXIT: " + clientStatus);
+                        + "Please enter PLAYER name, GO dim, CHAT message or EXIT: " + clientStatus + " ");
                 outputToClient.newLine();
                 outputToClient.flush();
                 break;
@@ -186,7 +162,7 @@ public class ClientHandler extends Thread {
         while (message != null && clientStatus == ClientStatus.WAITING) {
             String inputMessage[] = message.split(" ");
             if (message.startsWith("CHAT")) {
-                server.chatToAllPlayers(clientName + message);
+                server.chatToAllPlayers(clientName + " "+ message);
                 System.out.println(message);
                 break;
             } else if (message.startsWith("EXIT") && inputMessage.length == 1) {
@@ -203,12 +179,14 @@ public class ClientHandler extends Thread {
                 System.out.println(clientName + " has disconnected");
                 server.waitingToInitial(this);
                 clientStatus = ClientStatus.PREGAME;
+                break;
             }
             else {
                 outputToClient.write("WARNING waitingInput: Must...resist...kicking...you. " + message + " is invalid input. "
                         + "Please enter 'CHAT something' or EXIT: " + clientStatus);
                 outputToClient.newLine();
                 outputToClient.flush();
+                break;
             }
             if (clientStatus == ClientStatus.INGAME) {
                 break;

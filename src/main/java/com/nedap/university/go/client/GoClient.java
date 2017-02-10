@@ -41,12 +41,7 @@ public class GoClient extends Thread {
         }
     }
 
-    /**
-     * getter for the socket
-     *
-     * @return socket
-     */
-    public Socket getSocket() {
+    Socket getSocket() {
         return socket;
     }
 
@@ -55,12 +50,13 @@ public class GoClient extends Thread {
      *
      * @throws IOException
      */
-    public void handleInput() throws IOException {
+    private void handleInput() throws IOException {
         do {
             String message = inputFromPlayer.readLine();
+
             if (message != null) {
                 String inputMessage[] = message.split(" ");
-                if (message.startsWith("PLAYER") && inputMessage.length == 2 && checkName(inputMessage[1])) {
+                if (message.startsWith("PLAYER") && inputMessage.length == 2 && checkName(inputMessage[1]) && serverHandler.getClientName() == null) {
                     serverHandler.initName(inputMessage[0], inputMessage[1]);
                     break;
                 } else if (message.startsWith("GO") && inputMessage.length == 2 && checkDim(inputMessage[1]) && serverHandler.getClientName() != null) {
@@ -108,7 +104,7 @@ public class GoClient extends Thread {
      * @param input
      * @return boolean
      */
-    public boolean isParsable(String input) {
+    private boolean isParsable(String input) {
         try {
             Integer.parseInt(input);
         } catch (NumberFormatException e) {
@@ -123,7 +119,7 @@ public class GoClient extends Thread {
      * @param name
      * @return boolean
      */
-    public boolean checkName(String name) {
+    private boolean checkName(String name) {
         if (name.length() > 20 | name.matches(".*\\W+.*")) {
             System.out.println("Illegal input " + name +
                     ", name requirements: \n- name < 20 characters \n- name may only consist out of digits and letters");
@@ -139,7 +135,7 @@ public class GoClient extends Thread {
      * @param input
      * @return boolean
      */
-    public boolean checkDim(String input) {
+    private boolean checkDim(String input) {
         int parsedInput;
         if (!isParsable(input)) {
             return false;
@@ -157,7 +153,7 @@ public class GoClient extends Thread {
      *
      * @throws IOException
      */
-    public void shutdown() throws IOException {
+    void shutdown() throws IOException {
         inputFromPlayer.close();
         socket.close();
         System.exit(0);

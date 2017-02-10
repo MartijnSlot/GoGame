@@ -13,8 +13,8 @@ import java.util.Set;
  */
 public class Board {
 
-	public int dim;
-	Map<Position, Point> points = new HashMap<>();
+	private int dim;
+	private Map<Position, Point> points = new HashMap<>();
 
 	/**
 	 * constructor of board of size dim * dim, containing only EMPTY fields.
@@ -39,44 +39,25 @@ public class Board {
 	}
 
 
-	/**
-	 * Returns true when the point at position exists.
-	 * @param position
-	 * @return boolean
-	 */
 	public boolean isPoint(Position pos) {
 		return (this.points.containsKey(pos));
 	}
 
-	/**
-	 * Returns the point at position.
-	 * @param position
-	 * @return point
-	 */
-	public Point getPoint(Position pos) {
+	private Point getPoint(Position pos) {
 		return points.get(pos);
 	}
 
-	/**
-	 * Returns true when the point at position is empty.
-	 * @param position
-	 * @return boolean
-	 */
 	public boolean isEmptyPoint(Position pos) {
 		return (this.getPoint(pos).getStone() == Stone.EMPTY);
 	}
 
-	/**
-	 * Sets a point at position.
-	 * @param position, s
-	 */
 	public void setPoint(Position pos, Stone s) {
 		points.put(pos, new Point(s));
 	}
 
 	/**
 	 * Empties a position / removes a stone.
-	 * @param position
+	 * @param pos
 	 */
 	public void removePoint(Position pos) {
 		points.put(pos, new Point(Stone.EMPTY));
@@ -87,15 +68,15 @@ public class Board {
 	 * @param pos
 	 * @return set
 	 */
-	public Set<Position> getNeighbours(Position pos){
+	private Set<Position> getNeighbours(Position pos){
 		Set<Position> neighbours = new HashSet<>();
 
-		for (int i = pos.x - 1; i <= pos.x + 1; i++) {
-			Position a = new Position(i, pos.y);
+		for (int i = pos.getX() - 1; i <= pos.getX() + 1; i++) {
+			Position a = new Position(i, pos.getY());
 			if (isPoint(a))	neighbours.add(a);
 		}
-		for (int i = pos.y - 1; i <= pos.y + 1; i++) {
-			Position a = new Position(pos.x, i);
+		for (int i = pos.getY() - 1; i <= pos.getY() + 1; i++) {
+			Position a = new Position(pos.getX(), i);
 			if (isPoint(a))	neighbours.add(a);
 		}
 		return neighbours;
@@ -104,10 +85,10 @@ public class Board {
 
 	/**
 	 * Returns all empty positions surrounding argument position.
-	 * @param position
+	 * @param cluster
 	 * @return set
 	 */
-	public Set<Position> freePositions(Set<Position> cluster) {
+	private Set<Position> freePositions(Set<Position> cluster) {
 		Set<Position> freePositions = new HashSet<>();
 
 		for(Position clusterpos : cluster){
@@ -120,7 +101,7 @@ public class Board {
 
 	/**
 	 * Returns a cluster of defending stone positions in which position pos is situated.
-	 * @param position
+	 * @param pos
 	 * @return set
 	 */
 	public Set<Position> defendingCluster(Position pos) {
@@ -146,16 +127,16 @@ public class Board {
 
 	/**
 	 * Returns all liberty positions surrounding argument position (even if arguments exists in cluster of samecolor stones).
-	 * @param position
+	 * @param pos
 	 * @return set
 	 */
-	public Set<Position> libertyPositions(Position pos) {
+	private Set<Position> libertyPositions(Position pos) {
 		return freePositions(defendingCluster(pos));
 	}
 
 	/**
 	 * Returns number of liberties of argument (even if arguments exists in cluster of samecolor stones).
-	 * @param position
+	 * @param pos
 	 * @return int
 	 */
 	public int numberOfLiberties(Position pos) {
@@ -167,16 +148,16 @@ public class Board {
 	 * checks if the placement of a stone on pos is legal
 	 * stone is placed outside of the dimensions of the board
 	 * stone is placed on an occupied spot (black, white)
-	 * @param pos, s
+	 * @param x, y
 	 * @return boolean
 	 */
-	public boolean isAllowed(int row, int col) {
+	public boolean isAllowed(int x, int y) {
 
-		if (!isPoint(new Position(row, col))) {
+		if (!isPoint(new Position(x, y))) {
 			System.out.println("Move not allowed: position does not exist on this playing board.");
 			return false;
 		}
-		if (!isEmptyPoint(new Position(row, col))) {
+		if (!isEmptyPoint(new Position(x, y))) {
 			System.out.println("Move not allowed: position occupied.");
 			return false;
 		}
@@ -216,8 +197,8 @@ public class Board {
 	 */
 	public String toSimpleString() {
 		String boardString = "";
-		for (int i = 1; i <= dim; i++) {
-			for (int j = 1; j <= dim; j++) {
+		for (int i = 0; i < dim; i++) {
+			for (int j = 0; j < dim; j++) {
 				boardString = boardString + getPoint(new Position(i, j)).getStone().toString();
 			}
 		}
@@ -230,11 +211,11 @@ public class Board {
 	 */
 	public String toString() {
 		String s = "  ";
-		for (int i = 1; i <= dim; i++) {
+		for (int i = 0; i < dim; i++) {
 			s = s + i + " ";
 		}
 		s = s + "\n";
-		for (int i = 1; i <= dim; i++) {
+		for (int i = 0; i < dim; i++) {
 			String row = "" + i;
 			for (int j = 1; j <= dim; j++) {
 				row = row + " " + getPoint(new Position(i, j)).getStone().toString();

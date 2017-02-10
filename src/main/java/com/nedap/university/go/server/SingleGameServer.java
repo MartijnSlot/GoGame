@@ -32,7 +32,7 @@ public class SingleGameServer {
 		String playerNames[] = new String[2];
 		playerNames[0] = a.getClientName();
 		playerNames[1] = b.getClientName();
-		game = new Game(playerNames[0], playerNames[1], dim);
+		game = new Game(dim);
 
 		String opponent1 = chs[1].getName();
 		String color1 = "black";
@@ -44,18 +44,10 @@ public class SingleGameServer {
 	}
 
 	/**
-	 * getter for the current client which turn it is
-	 * @return int
-	 */
-	public int getCurrentClient() {
-		return currentClient;
-	}
-
-	/**
 	 * setter for the current client
 	 * @param a
 	 */
-	public void setCurrentClient(int a) {
+	void setCurrentClient(int a) {
 		this.currentClient = a;
 	}
 	
@@ -67,7 +59,7 @@ public class SingleGameServer {
 	 * @param row
 	 * @throws IOException
 	 */
-	public void executeTurnMove(int col, int row) throws IOException {
+	void executeTurnMove(int col, int row) throws IOException {
 		if (game.getBoard().isAllowed(col, row)) {
 			game.executeTurn(col, row);
 			setCurrentClient(game.currentPlayer);
@@ -83,7 +75,7 @@ public class SingleGameServer {
 	 * sets the players' statuses
 	 * @throws IOException
 	 */
-	public void executeTurnPass() throws IOException {
+	void executeTurnPass() throws IOException {
 		game.passMove();
 		setCurrentClient(game.currentPlayer);
 		chs[(currentClient + 1) % 2].writeToClient("PASSED");
@@ -97,7 +89,7 @@ public class SingleGameServer {
 	 * finishes the game
 	 * @throws IOException
 	 */
-	public void executeTurnTableflip() throws IOException {
+	void executeTurnTableflip() throws IOException {
 		chs[(currentClient + 1) % 2].writeToClient("TABLEFLIPPED");
 		game.tableflipMove();
 	}
@@ -107,7 +99,7 @@ public class SingleGameServer {
 	 * writes the end move to opponent
 	 * @throws IOException
 	 */
-	public void otherPlayerWins() throws IOException {
+	void otherPlayerWins() throws IOException {
 		chs[(currentClient + 1) % 2].writeToClient("END");
 	}
 
@@ -116,7 +108,7 @@ public class SingleGameServer {
 	 * writes the chat to opponent
 	 * @throws IOException
 	 */
-	public synchronized void chatToOtherPlayer(String message) throws IOException {
+	synchronized void chatToOtherPlayer(String message) throws IOException {
 		chs[(currentClient + 1) % 2].writeToClient(message);
 	}
 

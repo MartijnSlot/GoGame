@@ -10,27 +10,19 @@ import java.util.Objects;
  */
 public class Position {
 
-	int x;
-	int y;
+	private int x;
+	private int y;
 
 	public Position(int x, int y){
 		this.x = x;
 		this.y = y;
 	}
 
-	/**
-	 * getter for the columns (x)
-	 * @return int
-	 */
-	public int getX() {
+	int getX() {
 		return x;
 	}
 	
-	/**
-	 * getter for the rows (y)
-	 * @return
-	 */
-	public int getY() {
+	int getY() {
 		return y;
 	}
 

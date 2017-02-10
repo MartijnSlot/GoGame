@@ -26,12 +26,7 @@ public class ServerHandler extends Thread {
     private Game game;
     private Socket socket;
 
-    /**
-     * threaded clienthandler constructor
-     *
-     * @param socket
-     * @param client
-     */
+
     public ServerHandler(GoClient client, Socket socket) {
         this.client = client;
         this.socket = socket;
@@ -56,12 +51,7 @@ public class ServerHandler extends Thread {
         }
     }
 
-    /**
-     * getter for the clientName
-     *
-     * @return String
-     */
-    public String getClientName() {
+    String getClientName() {
         return clientName;
     }
 
@@ -79,17 +69,10 @@ public class ServerHandler extends Thread {
                 break;
             } else if (fromServer.startsWith("READY")) {
                 String color = serverInputMessage[1];
-				String player;
-				String opponent;
-                if (color.equals("black")) {
-					player = clientName;
-					opponent = serverInputMessage[2];
-                } else {
-                    player = serverInputMessage[2];
-                    opponent = clientName;
-                }
+                String opponent = serverInputMessage[2];
                 dim = Integer.parseInt(serverInputMessage[3]);
-				game = new Game(player, opponent, dim);
+                System.out.println("Your name: " + clientName + "\nYour color: " + color + "\nYour opponent: " + opponent);
+				game = new Game(dim);
                 break;
 
             } else if (fromServer.startsWith("VALID")) {
@@ -113,7 +96,7 @@ public class ServerHandler extends Thread {
                 System.out.println("Other player " + fromServer);
                 break;
             } else if (fromServer.startsWith("WARNING")) {
-                System.out.println(fromServer + "try something else");
+                System.out.println(fromServer + " try something else");
                 break;
             } else if (fromServer.startsWith("TABLEFLIPPED")) {
                 System.out.println(fromServer);
@@ -132,25 +115,14 @@ public class ServerHandler extends Thread {
         }
     }
 
-    /**
-     * general message writer from client to server
-     *
-     * @param message
-     * @throws IOException
-     */
-    public synchronized void writeToServer(String message) throws IOException {
+    synchronized void writeToServer(String message) throws IOException {
         outputToServer.write(message);
         outputToServer.newLine();
         outputToServer.flush();
 
     }
 
-    /**
-     * Shuts down the serverHandler
-     *
-     * @throws IOException
-     */
-    public void shutdown() throws IOException {
+    void shutdown() throws IOException {
         outputToServer.close();
         inputFromServer.close();
     }
@@ -181,7 +153,7 @@ public class ServerHandler extends Thread {
      * @param name
      * @throws IOException
      */
-    public void initName(String player, String name) throws IOException {
+    void initName(String player, String name) throws IOException {
         clientName = name;
         writeToServer(player + " " + name);
     }
@@ -193,7 +165,7 @@ public class ServerHandler extends Thread {
      * @param boardSize
      * @throws IOException
      */
-    public void initGame(String go, String boardSize) throws IOException {
+    void initGame(String go, String boardSize) throws IOException {
         dim = Integer.parseInt(boardSize);
         writeToServer(go + " " + boardSize);
     }
@@ -206,7 +178,7 @@ public class ServerHandler extends Thread {
      * @param move
      * @throws IOException
      */
-    public void move(String move, String stringX, String stringY) throws IOException {
+    void move(String move, String stringX, String stringY) throws IOException {
         int col = Integer.parseInt(stringX);
         int row = Integer.parseInt(stringY);
         if (!moveAllowed(col, row)) {
@@ -222,8 +194,10 @@ public class ServerHandler extends Thread {
      * @param toServer
      * @throws IOException
      */
-    public void toServer(String toServer) throws IOException {
+    void toServer(String toServer) throws IOException {
         writeToServer(toServer);
 
     }
+
+
 }

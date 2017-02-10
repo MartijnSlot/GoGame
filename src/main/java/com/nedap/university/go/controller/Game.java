@@ -25,11 +25,11 @@ public class Game {
     private boolean draw;
     private static GoGUIIntegrator gogui;
 
-    public Game(String name1, String name2, int dim) {
+    public Game(int dim) {
         board = new Board(dim);
         players = new Player[numberPlayers];
-        players[0] = new Player(name1, Stone.BLACK);
-        players[1] = new Player(name2, Stone.WHITE);
+        players[0] = new Player(Stone.BLACK);
+        players[1] = new Player(Stone.WHITE);
         currentPlayer = 0;
         draw = false;
         gogui = new GoGUIIntegrator(false, true, dim);
@@ -37,11 +37,6 @@ public class Game {
         gogui.setBoardSize(dim);
     }
 
-    /**
-     * Getter that returns the board.
-     *
-     * @return board
-     */
     public Board getBoard() {
         return board;
     }
@@ -52,14 +47,14 @@ public class Game {
      * writes history for the KO rule
      * gives the turn to the next player
      *
-     * @param row
-     * @param col
+     * @param x
+     * @param y
      */
-    public void executeTurn(int row, int col) {
+    public void executeTurn(int x, int y) {
         updateTUI();
-        players[currentPlayer].makeMove(board, new Position(row, col));
-        addToGUI(row, col);
-        autoRemove(row, col);
+        players[currentPlayer].makeMove(board, new Position(x, y));
+        addToGUI(x, y);
+        autoRemove(x, y);
         writeHistory();
         currentPlayer = (currentPlayer + 1) % numberPlayers;
         updateTUI();
@@ -85,12 +80,12 @@ public class Game {
      */
     private void determineWinner() {
         if (board.countScore()[0] > board.countScore()[1]) {
-            for (int i = 1; i <= currentPlayer; i++) {
+            for (int i = 0; i < numberPlayers; i++) {
                 if (players[i].getStone() == Stone.BLACK) players[i].isWinner();
             }
         }
         if (board.countScore()[1] > board.countScore()[0]) {
-            for (int i = 1; i <= currentPlayer; i++) {
+            for (int i = 0; i < numberPlayers; i++) {
                 if (players[i].getStone() == Stone.WHITE) players[i].isWinner();
             }
         }
@@ -112,33 +107,33 @@ public class Game {
      * reset board
      */
     public void reset() {
-        this.board = new Board(board.dim);
+        this.board = new Board(board.getDim());
     }
 
     /**
      * replace the defending cluster stones (black, white) with EMPTY
      *
-     * @param row
-     * @param col
+     * @param x
+     * @param y
      */
-    private void autoRemove(int row, int col) {
+    private void autoRemove(int x, int y) {
         Set<Position> a = new HashSet<>();
-        a.add(new Position(col - 1, row));
-        a.add(new Position(col + 1, row));
-        a.add(new Position(col, row - 1));
-        a.add(new Position(col, row + 1));
+        a.add(new Position(x - 1, y));
+        a.add(new Position(x + 1, y));
+        a.add(new Position(x, y - 1));
+        a.add(new Position(x, y + 1));
         for (Position p : a) {
             if (board.isPoint(p) && !board.isEmptyPoint(p) && board.numberOfLiberties(p) == 0) {
                 for (Position q : board.defendingCluster(p)) {
                     board.setPoint(q, Stone.EMPTY);
-                    removeFromGUI(col, row);
+                    removeFromGUI(x, y);
                 }
             }
         }
-        if (!board.isEmptyPoint(new Position(col, row)) && board.numberOfLiberties(new Position(col, row)) == 0) {
-            for (Position r : board.defendingCluster(new Position(col, row))) {
+        if (!board.isEmptyPoint(new Position(x, y)) && board.numberOfLiberties(new Position(x, y)) == 0) {
+            for (Position r : board.defendingCluster(new Position(x, y))) {
                 board.setPoint(r, Stone.EMPTY);
-                removeFromGUI(col, row);
+                removeFromGUI(x, y);
             }
         }
     }
@@ -154,20 +149,20 @@ public class Game {
     /**
      * checks if the placement of a stone is in accordance with the <i>ko-rule</i>
      *
-     * @param row
-     * @param col
+     * @param x
+     * @param y
      * @return boolean
      */
-    public boolean inKo(int row, int col) {
+    public boolean inKo(int x, int y) {
         boolean inKo = false;
-        this.players[currentPlayer].makeMove(this.board, new Position(row, col));
+        this.players[currentPlayer].makeMove(this.board, new Position(x, y));
         for (String b : history) {
             if (this.board.toSimpleString().equals(b)) {
-                board.removePoint(new Position(row, col));
+                board.removePoint(new Position(x, y));
                 inKo = true;
             }
         }
-        board.removePoint(new Position(row, col));
+        board.removePoint(new Position(x, y));
         return inKo;
     }
 
@@ -184,27 +179,21 @@ public class Game {
     /**
      * adds a stone to the GUI, only the game is allowed to do this.
      *
-     * @param row
-     * @param col
+     * @param x
+     * @param y
      */
-    public void addToGUI(int row, int col) {
-        boolean white = false;
-        if (this.players[currentPlayer].getStone() == Stone.WHITE) {
-            white = true;
-        } else {
-            white = false;
-        }
-        gogui.addStone(row - 1, col - 1, white);
+    public void addToGUI(int x, int y) {
+        gogui.addStone(x, y, this.players[currentPlayer].getStone() == Stone.WHITE);
     }
 
     /**
      * removes a stone from the GUI, only the game is allowed to do this.
      *
-     * @param row
-     * @param col
+     * @param x
+     * @param y
      */
-    private void removeFromGUI(int row, int col) {
-        gogui.removeStone(row - 1, col - 1);
+    private void removeFromGUI(int x, int y) {
+        gogui.removeStone(x, y);
     }
 
     /**
