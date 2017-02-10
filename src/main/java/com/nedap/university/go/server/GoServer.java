@@ -126,7 +126,7 @@ public class GoServer extends Thread {
 		} 
 	}
 
-	public void waitingToInitial(ClientHandler clientHandler) {
+	public void statusWaitingToInitial(ClientHandler clientHandler) {
 		pendingClients.get(clientHandler.getDim()).remove(clientHandler);
 	}
 

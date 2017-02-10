@@ -34,12 +34,12 @@ public class SingleGameServer {
 		playerNames[1] = b.getClientName();
 		game = new Game(dim);
 
-		String opponent1 = chs[1].getName();
+		String opponent1 = b.getClientName();
 		String color1 = "black";
 		chs[0].sendReady(color1, opponent1, dim);
 
-		String opponent2 = chs[0].getName();
-		String color2 = "black";
+		String opponent2 = a.getClientName();
+		String color2 = "white";
 		chs[1].sendReady(color2, opponent2, dim);
 	}
 

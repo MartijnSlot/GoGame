@@ -60,6 +60,10 @@ public class ClientHandler extends Thread {
                         waitingInput();
                         writeToClient("ClientStatus " + clientStatus);
                         break;
+                    case INGAME:
+                        gameInput();
+                        writeToClient("ClientStatus " + clientStatus);
+                        break;
                     default:
                         break;
                 }
@@ -128,7 +132,7 @@ public class ClientHandler extends Thread {
                 break;
             } else if (message.startsWith("CHAT")) {
                 server.chatToAllPlayers(clientName + message);
-                System.out.println(clientName+ ": " + message);
+                System.out.println(clientName + ": " + message);
                 break;
             } else if (message.startsWith("EXIT") && inputMessage.length == 1) {
                 System.out.println(clientName + " has disconnected");
@@ -177,7 +181,7 @@ public class ClientHandler extends Thread {
                 }
             } else if (message.startsWith("CANCEL") && inputMessage.length == 1) {
                 System.out.println(clientName + " has disconnected");
-                server.waitingToInitial(this);
+                server.statusWaitingToInitial(this);
                 clientStatus = ClientStatus.PREGAME;
                 break;
             }
@@ -200,6 +204,7 @@ public class ClientHandler extends Thread {
      * @throws IOException
      */
     public void gameInput() throws IOException {
+        writeToClient("It is your turn. Options: MOVE x y\nPASS\nTABLEFLIP\nEXIT\n");
         String message = inputFromClient.readLine();
 
         while (message != null && clientStatus == ClientStatus.INGAME) {

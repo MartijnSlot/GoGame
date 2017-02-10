@@ -21,8 +21,8 @@ import java.util.Set;
 public class KoTest {
 
 	private Game game;
-	private Player player1 = new Player("jan", Stone.BLACK);
-	private Player player2 = new Player("piet", Stone.WHITE);
+	private Player player1 = new Player(Stone.BLACK);
+	private Player player2 = new Player(Stone.WHITE);
 
 	
 
