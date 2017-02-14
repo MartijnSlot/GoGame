@@ -23,8 +23,8 @@ public class Board {
 
 	public Board(int dim) {
 		this.dim = dim;
-		for (int x = 1; x <= dim; x++) {
-			for (int y = 1; y <= dim; y++) {
+		for (int x = 0; x < dim; x++) {
+			for (int y = 0; y < dim; y++) {
 				this.points.put(new Position(x,y), new Point(Stone.EMPTY));
 			}
 		}
@@ -91,8 +91,8 @@ public class Board {
 	private Set<Position> freePositions(Set<Position> cluster) {
 		Set<Position> freePositions = new HashSet<>();
 
-		for(Position clusterpos : cluster){
-			for (Position p : getNeighbours(clusterpos)) {
+		for(Position clusterPos : cluster){
+			for (Position p : getNeighbours(clusterPos)) {
 				if (getPoint(p).getStone() == Stone.EMPTY) freePositions.add(p);
 			}
 		}
@@ -148,20 +148,16 @@ public class Board {
 	 * checks if the placement of a stone on pos is legal
 	 * stone is placed outside of the dimensions of the board
 	 * stone is placed on an occupied spot (black, white)
-	 * @param x, y
+	 * @param x
+	 * @oaran y
 	 * @return boolean
 	 */
 	public boolean isAllowed(int x, int y) {
-
-		if (!isPoint(new Position(x, y))) {
-			System.out.println("Move not allowed: position does not exist on this playing board.");
-			return false;
+		if (isPoint(new Position(x, y)) && isEmptyPoint(new Position(x, y))) {
+			return true;
 		}
-		if (!isEmptyPoint(new Position(x, y))) {
-			System.out.println("Move not allowed: position occupied.");
-			return false;
-		}
-		return true;
+		System.out.println("Move not allowed: position does not exist on this playing board, or the position is not Empty.");
+		return false;
 	}
 	
 	
@@ -198,9 +194,8 @@ public class Board {
 	public String toSimpleString() {
 		String boardString = "";
 		for (int i = 0; i < dim; i++) {
-			for (int j = 0; j < dim; j++) {
-				boardString = boardString + getPoint(new Position(i, j)).getStone().toString();
-			}
+			for (int j = 0; j < dim; j++)
+                boardString = boardString + getPoint(new Position(i, j)).getStone().toString();
 		}
 		return boardString;
 	}
@@ -217,7 +212,7 @@ public class Board {
 		s = s + "\n";
 		for (int i = 0; i < dim; i++) {
 			String row = "" + i;
-			for (int j = 1; j <= dim; j++) {
+			for (int j = 0; j < dim; j++) {
 				row = row + " " + getPoint(new Position(i, j)).getStone().toString();
 			}
 			s = s + row;

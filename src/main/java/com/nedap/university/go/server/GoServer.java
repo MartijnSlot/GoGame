@@ -59,9 +59,9 @@ public class GoServer extends Thread {
 	 * @throws IOException
 	 */
 	
-	public synchronized void chatToAllPlayers(String message) throws IOException {
-		for (ClientHandler a : clientSet) {
-			a.writeToClient(message);
+	public void chatToAllPlayers(String message) throws IOException {
+		for (ClientHandler clientHandler : clientSet) {
+            clientHandler.writeToClient(message);
 		}
 	}
 	
@@ -100,7 +100,9 @@ public class GoServer extends Thread {
 						pendingClients.remove(dimBoard);
 						ch1.setClientStatus(ClientStatus.INGAME);
 						ch2.setClientStatus(ClientStatus.INGAME);
-						new SingleGameServer(ch1, ch2, dim);
+                        SingleGameServer singleGameServer = new SingleGameServer(ch1, ch2, dim);
+                        ch1.setSingleGameServer(singleGameServer);
+                        ch2.setSingleGameServer(singleGameServer);
 					} break;
 				} break;
 			}

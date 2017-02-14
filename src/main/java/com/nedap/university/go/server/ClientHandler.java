@@ -17,7 +17,7 @@ import java.net.Socket;
 
 public class ClientHandler extends Thread {
     private GoServer server;
-    private SingleGameServer sgs;
+    private SingleGameServer singleGameServer;
     private Socket socket;
     private BufferedWriter outputToClient;
     private BufferedReader inputFromClient;
@@ -55,17 +55,18 @@ public class ClientHandler extends Thread {
                 switch (clientStatus) {
                     case PREGAME:
                         preGameInput();
-                        writeToClient("ClientStatus " + clientStatus);
+                        writeToClient("CHAT server: ClientStatus " + clientStatus);
                         break;
                     case WAITING:
                         waitingInput();
-                        writeToClient("ClientStatus " + clientStatus);
+                        writeToClient("CHAT server: ClientStatus " + clientStatus);
                         break;
                     case INGAME:
                         gameInput();
-                        writeToClient("ClientStatus " + clientStatus);
+                        writeToClient("CHAT server: ClientStatus " + clientStatus);
                         break;
                     default:
+                        System.out.println("Hier mag ik nooit komen...");
                         break;
                 }
             }
@@ -103,7 +104,7 @@ public class ClientHandler extends Thread {
      * @param boardSize
      * @throws IOException
      */
-    synchronized void sendReady(String color, String opponent, int boardSize) throws IOException {
+    void sendReady(String color, String opponent, int boardSize) throws IOException {
         outputToClient.write("READY " + color + " " + opponent + " " + boardSize);
         outputToClient.newLine();
         outputToClient.flush();
@@ -116,28 +117,28 @@ public class ClientHandler extends Thread {
      */
     private void preGameInput() throws IOException {
 
-        writeToClient("Please enter command PLAYER name, GO dim, CHAT message or EXIT: ");
+        writeToClient("CHAT server: Please enter command PLAYER name, GO dim, CHAT message or EXIT: ");
         String message = inputFromClient.readLine();
         while (message != null) {
             String inputMessage[] = message.split(" ");
             if (message.startsWith("PLAYER") && inputMessage.length == 2 && checkName(inputMessage[1]) && clientName == null) {
                 clientName = inputMessage[1];
                 server.clientEntry(this);
-                writeToClient("Your name is " + clientName);
+                writeToClient("CHAT server: Your name is " + clientName);
                 System.out.println(clientName + " has entered the arena!");
                 break;
             } else if (message.startsWith("GO") && inputMessage.length == 2 && checkDim(inputMessage[1])) {
                 setDim(Integer.parseInt(inputMessage[1]));
-                writeToClient("Dimension entered: " + dim);
+                writeToClient("CHAT server: Dimension entered: " + dim);
                 System.out.println("Game waiting: " + clientName + " " + dim);
                 server.clientMatcher(this, dim);
                 break;
             } else if (message.startsWith("CHAT")) {
-                server.chatToAllPlayers(clientName + ": " + message);
+                server.chatToAllPlayers("CHAT " + clientName + ": " + message);
                 System.out.println(clientName + ": " + message);
                 break;
             } else if (message.startsWith("EXIT") && inputMessage.length == 1) {
-                System.out.println(clientName + " has disconnected");
+                server.chatToAllPlayers("CHAT " + clientName + " has disconnected");
                 try {
                     this.join();
                     outputToClient.close();
@@ -168,11 +169,11 @@ public class ClientHandler extends Thread {
         while (message != null && clientStatus == ClientStatus.WAITING) {
             String inputMessage[] = message.split(" ");
             if (message.startsWith("CHAT")) {
-                server.chatToAllPlayers(clientName + ": " + message);
+                server.chatToAllPlayers("CHAT " + clientName + ": " + message);
                 System.out.println(clientName + ": " + message);
                 break;
             } else if (message.startsWith("EXIT") && inputMessage.length == 1) {
-                System.out.println(clientName + " has disconnected");
+                server.chatToAllPlayers("CHAT " + clientName + " has disconnected");
                 try {
                     this.join();
                     outputToClient.close();
@@ -212,17 +213,17 @@ public class ClientHandler extends Thread {
             String inputMessage[] = message.split(" ");
 
             if (message.startsWith("MOVE") && isParsable(inputMessage[1]) && isParsable(inputMessage[2]) && inputMessage.length == 3 && turn) {
-                sgs.executeTurnMove(Integer.parseInt(inputMessage[1]), Integer.parseInt(inputMessage[2]));
+                singleGameServer.executeTurnMove(Integer.parseInt(inputMessage[1]), Integer.parseInt(inputMessage[2]));
                 break;
             } else if (message.startsWith("PASS") && inputMessage.length == 1 && turn) {
-                sgs.executeTurnPass();
+                singleGameServer.executeTurnPass();
                 break;
             } else if (message.startsWith("TABLEFLIP") && inputMessage.length == 1 && turn) {
-                sgs.executeTurnTableflip();
+                singleGameServer.executeTurnTableflip();
                 writeToClient("TABLEFLIPPED" + message);
                 playAgain();
             } else if (message.startsWith("CHAT")) {
-                sgs.chatToGamePlayers(message);
+                singleGameServer.chatToGamePlayers("CHAT " + clientName + ": " + message);
                 break;
             } else if (message.startsWith("EXIT")) {
                 try {
@@ -251,9 +252,11 @@ public class ClientHandler extends Thread {
      * @throws IOException
      */
     public void annihilatePlayer() throws IOException {
-        sgs.otherPlayerWins();
-        writeToClient("You've been caught cheating, therefore you shall be annihilated!");
+        singleGameServer.otherPlayerWins();
+        writeToClient("CHAT You've been caught cheating, therefore you shall be annihilated!");
         server.pendingClients.get(this.getDim()).remove(this);
+        server.clientSet.remove(this);
+        server.clientHandlerMap.remove(this);
         outputToClient.close();
         inputFromClient.close();
         server.socket.close();
@@ -282,7 +285,7 @@ public class ClientHandler extends Thread {
      */
     private boolean checkName(String name) {
         if (name.length() > 20 | name.matches(".*\\W+.*")) {
-            System.out.println("CHAT Server: Illegal input " + name +
+            writeToClient("CHAT Server: Illegal input " + name +
                     ", name requirements: \n- name < 20 characters \n- name may only consist out of digits and letters");
             return false;
         }
@@ -304,7 +307,6 @@ public class ClientHandler extends Thread {
             parsedInput = Integer.parseInt(input);
             if (parsedInput % 2 == 0 || parsedInput < 5 || parsedInput > 131) {
                 dimIsOk = false;
-                System.out.println("dimension is not OK");
             }
         }
         return dimIsOk;
@@ -321,7 +323,7 @@ public class ClientHandler extends Thread {
         BufferedReader input = new BufferedReader(new InputStreamReader(System.in));
 
         do {
-            writeToClient("Play again? (Y/N)");
+            writeToClient("CHAT Play again? (Y/N)");
             try {
                 String playAgain = input.readLine();
                 if (playAgain.equals("Y") | playAgain.equals("y") | playAgain.equals("yes")) {
@@ -333,11 +335,11 @@ public class ClientHandler extends Thread {
                     outputToClient.close();
                     return false;
                 } else {
-                    writeToClient("Wrong input (Y/N)");
+                    writeToClient("CHAT Wrong input (Y/N)");
                     inputError = true;
                 }
             } catch (IOException e) {
-                writeToClient("Wrong input (Y/N)");
+                writeToClient("CHAT Wrong input (Y/N)");
                 inputError = true;
             }
         } while (inputError);
@@ -351,9 +353,9 @@ public class ClientHandler extends Thread {
      * @param message
      * @throws IOException
      */
-    synchronized void writeToClient(String message) {
+    void writeToClient(String message) {
         try {
-            outputToClient.write("CHAT from server: " + message);
+            outputToClient.write(message);
             outputToClient.newLine();
             outputToClient.flush();
         } catch (IOException e) {
@@ -363,8 +365,10 @@ public class ClientHandler extends Thread {
 
     void setTurn(boolean turn) {
         this.turn = turn;
-        if (turn) writeToClient("It is your turn, " + clientName);
-        else writeToClient("It is not your turn.");
+    }
+
+    public void setSingleGameServer(SingleGameServer singleGameServer) {
+        this.singleGameServer = singleGameServer;
     }
 
     /**

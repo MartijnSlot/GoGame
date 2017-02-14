@@ -1,5 +1,8 @@
 package com.nedap.university.go.client;
 
+import com.nedap.university.go.model.Stone;
+import com.nedap.university.go.viewer.GoGUIIntegrator;
+
 import java.io.*;
 import java.net.*;
 
@@ -16,6 +19,7 @@ public class GoClient extends Thread {
     private Socket socket;
     private BufferedReader inputFromPlayer;
     private ServerHandler serverHandler;
+    private static GoGUIIntegrator gogui;
 
 
     public GoClient(String serverAddress, int serverPort) throws IOException {
@@ -62,21 +66,21 @@ public class GoClient extends Thread {
                 } else if (message.startsWith("GO") && inputMessage.length == 2 && checkDim(inputMessage[1]) && serverHandler.getClientName() != null) {
                     serverHandler.initGame(inputMessage[0], inputMessage[1]);
                     break;
-                } else if (message.startsWith("MOVE") && isParsable(inputMessage[1]) && isParsable(inputMessage[2]) && serverHandler.getClientName() != null) {
+                } else if (message.startsWith("MOVE") && inputMessage.length == 3 && isParsable(inputMessage[1]) && isParsable(inputMessage[2]) && serverHandler.getClientName() != null) {
                     serverHandler.move(inputMessage[0], inputMessage[1], inputMessage[2]);
                     break;
                 } else if (message.startsWith("PASS") && inputMessage.length == 1 && serverHandler.getClientName() != null) {
-                    serverHandler.toServer(inputMessage[0]);
+                    serverHandler.writeToServer(message);
                     break;
                 } else if (message.startsWith("TABLEFLIP") && inputMessage.length == 1 && serverHandler.getClientName() != null) {
-                    serverHandler.toServer(message);
+                    serverHandler.writeToServer(message);
                     break;
                 } else if (message.startsWith("CHAT")) {
                     if (serverHandler.getClientName() == null) {
                         System.out.println("Please enter PLAYER name first.");
                         break;
                     }
-                    serverHandler.toServer(message);
+                    serverHandler.writeToServer(message);
 
                     break;
                 } else if (message.startsWith("EXIT") && inputMessage.length == 1) {
@@ -85,7 +89,7 @@ public class GoClient extends Thread {
                     this.shutdown();
                     break;
                 } else if (message.startsWith("CANCEL") && inputMessage.length == 1) {
-                    serverHandler.toServer(message);
+                    serverHandler.writeToServer(message);
                     break;
                 } else if (message.isEmpty()) {
                     System.out.println("WARNING " + message + " is invalid input.");

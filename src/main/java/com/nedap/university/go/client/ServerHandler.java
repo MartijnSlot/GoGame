@@ -1,6 +1,8 @@
 package com.nedap.university.go.client;
 
 import com.nedap.university.go.controller.Game;
+import com.nedap.university.go.model.Stone;
+import com.nedap.university.go.viewer.GoGUIIntegrator;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -25,6 +27,8 @@ public class ServerHandler extends Thread {
     private Integer dim;
     private Game game;
     private Socket socket;
+    private GoGUIIntegrator gogui;
+    private boolean white;
 
 
     public ServerHandler(GoClient client, Socket socket) {
@@ -60,7 +64,7 @@ public class ServerHandler extends Thread {
      *
      * @param fromServer message from server
      */
-    private synchronized void handleGame(String fromServer) {
+    private void handleGame(String fromServer) {
 
         while (fromServer != null) {
             String serverInputMessage[] = fromServer.split(" ");
@@ -69,6 +73,11 @@ public class ServerHandler extends Thread {
                 break;
             } else if (fromServer.startsWith("READY")) {
                 String color = serverInputMessage[1];
+                if (serverInputMessage[1] == "white") {
+                    white = true;
+                } else {
+                    white = false;
+                }
                 String opponent = serverInputMessage[2];
                 dim = Integer.parseInt(serverInputMessage[3]);
                 System.out.println("Your name: " + clientName + "\nYour color: " + color + "\nYour opponent: " + opponent);
@@ -76,14 +85,14 @@ public class ServerHandler extends Thread {
                 break;
 
             } else if (fromServer.startsWith("VALID")) {
-                int col = Integer.parseInt(serverInputMessage[2]);
-                int row = Integer.parseInt(serverInputMessage[3]);
+                int col = Integer.parseInt(serverInputMessage[1]);
+                int row = Integer.parseInt(serverInputMessage[2]);
                 game.executeTurn(row, col);
-                game.addToGUI(row, col);
-                System.out.println(fromServer);
+                addToGUI(row, col);
+                System.out.println("Move " + fromServer);
                 break;
             } else if (fromServer.startsWith("INVALID") && serverInputMessage.length == 1) {
-                System.out.println(fromServer + " kicked from the game due to invalid move");
+                System.out.println(fromServer + ": kicked from the server due to invalid move");
                 try {
                     client.shutdown();
                 } catch (IOException e) {
@@ -111,11 +120,12 @@ public class ServerHandler extends Thread {
                 System.out.println("Score black: " + scoreBlack + "\nScore white: " + scoreWhite);
             } else if (!fromServer.isEmpty()){
                 System.out.println("WARNING in the input from server. " + fromServer + " is invalid input.");
+                break;
             }
         }
     }
 
-    synchronized void writeToServer(String message) throws IOException {
+    void writeToServer(String message) throws IOException {
         outputToServer.write(message);
         outputToServer.newLine();
         outputToServer.flush();
@@ -167,6 +177,9 @@ public class ServerHandler extends Thread {
      */
     void initGame(String go, String boardSize) throws IOException {
         dim = Integer.parseInt(boardSize);
+        gogui = new GoGUIIntegrator(false, true, dim);
+        gogui.startGUI();
+        gogui.setBoardSize(dim);
         writeToServer(go + " " + boardSize);
     }
 
@@ -179,25 +192,34 @@ public class ServerHandler extends Thread {
      * @throws IOException
      */
     void move(String move, String stringX, String stringY) throws IOException {
-        int col = Integer.parseInt(stringX);
-        int row = Integer.parseInt(stringY);
-        if (!moveAllowed(col, row)) {
+        int x = Integer.parseInt(stringX);
+        int y = Integer.parseInt(stringY);
+        if (!moveAllowed(x, y)) {
             System.out.print(move + " " + stringX + " " + stringY + " incorrect, try again");
+        } else {
+            writeToServer(move + " " + stringX + " " + stringY);
         }
-        writeToServer(move + " " + stringX + " " + stringY);
-
     }
 
     /**
-     * passes 'PASS' to the server, given by the client
+     * adds a stone to the GUI, only the game is allowed to do this.
      *
-     * @param toServer
-     * @throws IOException
+     * @param x
+     * @param y
      */
-    void toServer(String toServer) throws IOException {
-        writeToServer(toServer);
-
+    public void addToGUI(int x, int y) {
+        gogui.addStone(x, y, white);
     }
 
-
+    /**
+     * removes a stone from the GUI, only the game is allowed to do this.
+     *
+     * @param x
+     * @param y
+     */
+    private void removeFromGUI(int x, int y) {
+        gogui.removeStone(x, y);
+    }
+    
+    
 }

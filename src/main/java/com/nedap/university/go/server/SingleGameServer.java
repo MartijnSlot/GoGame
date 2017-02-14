@@ -1,7 +1,6 @@
 package com.nedap.university.go.server;
 
 import com.nedap.university.go.controller.Game;
-import com.nedap.university.go.server.ClientHandler.ClientStatus;
 import java.io.IOException;
 
 /**
@@ -14,7 +13,7 @@ public class SingleGameServer {
 
 	private ClientHandler[] chs;
 	private Game game;
-	private int currentClient;
+	private int currentClient = 0;
 	private int otherClient = (currentClient + 1) % 2;
 
 	
@@ -39,11 +38,12 @@ public class SingleGameServer {
 		String color1 = "black";
 		chs[0].sendReady(color1, opponent1, dim);
 		chs[0].setTurn(true);
+        chs[0].askInput();
 
 		String opponent2 = a.getClientName();
 		String color2 = "white";
 		chs[1].sendReady(color2, opponent2, dim);
-		chs[0].setTurn(false);
+		chs[1].setTurn(false);
 	}
 
 	/**
@@ -58,19 +58,21 @@ public class SingleGameServer {
 	 * executes a 'move'  turn, moves a stone on x (col), y (row)
 	 * writes the move to all participating clients
 	 * sets the players' statuses
-	 * @param col
-	 * @param row
+	 * @param x
+	 * @param y
 	 * @throws IOException
 	 */
-	void executeTurnMove(int col, int row) throws IOException {
-		if (game.getBoard().isAllowed(col, row)) {
-			game.executeTurn(col, row);
-			chs[currentClient].setTurn(false);
-			chs[otherClient].setTurn(true);
-            chs[currentClient].writeToClient("It is not your turn. Options: CHAT\nEXIT\n");
-			chs[otherClient].writeToClient("It is now your turn. Options: MOVE x y\nPASS\nCHAT\nTABLEFLIP\nEXIT\n");
-			setCurrentClient(game.currentPlayer);
+	void executeTurnMove(int x, int y) throws IOException {
+		if (game.getBoard().isAllowed(x, y)) {
+			game.executeTurn(x, y);
+			chatToGamePlayers("VALID " + x + " " + y);
+			setCurrentClient(game.getCurrentPlayer());
+			chs[currentClient].setTurn(true);
+			chs[currentClient].writeToClient("\nCHAT It is now your turn. Options: \nMOVE x y\nPASS\nCHAT\nTABLEFLIP\nEXIT");
+			chs[otherClient].setTurn(false);
+			chs[otherClient].writeToClient("\nCHAT It is not your turn. Options: CHAT\nEXIT");;
 		} else {
+            chatToGamePlayers("INVALID");
 			chs[currentClient].annihilatePlayer();
 		}
 	}
@@ -83,10 +85,10 @@ public class SingleGameServer {
 	 */
 	void executeTurnPass() throws IOException {
 		game.passMove();
-		setCurrentClient(game.currentPlayer);
+		setCurrentClient(game.getCurrentPlayer());
 		chs[otherClient].writeToClient("PASSED");
-		chs[currentClient].setTurn(false);
-		chs[otherClient].setTurn(true);
+		chs[currentClient].setTurn(true);
+		chs[otherClient].setTurn(false);
 	}
 
 	/**
@@ -106,7 +108,7 @@ public class SingleGameServer {
 	 * @throws IOException
 	 */
 	void otherPlayerWins() throws IOException {
-		chs[otherClient].writeToClient("END");
+		chs[otherClient].writeToClient("END : " + game.getBoard().countScore()[0] + game.getBoard().countScore()[1] );
 	}
 
 	/**

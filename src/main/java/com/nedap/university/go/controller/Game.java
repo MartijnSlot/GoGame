@@ -4,7 +4,6 @@ import com.nedap.university.go.model.Board;
 import com.nedap.university.go.model.Player;
 import com.nedap.university.go.model.Position;
 import com.nedap.university.go.model.Stone;
-import com.nedap.university.go.viewer.GoGUIIntegrator;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -20,11 +19,10 @@ public class Game {
     private int numberPlayers = 2;
     private Board board;
     private Player[] players;
-    public int currentPlayer;
-    public int otherPlayer;
+    private int currentPlayer;
+    private int otherPlayer;
     private Set<String> history = new HashSet<>();
     private boolean draw = false;
-    private static GoGUIIntegrator gogui;
 
     public Game(int dim) {
         board = new Board(dim);
@@ -34,9 +32,6 @@ public class Game {
         currentPlayer = 0;
         otherPlayer = (currentPlayer + 1) % 2;
         draw = false;
-        gogui = new GoGUIIntegrator(false, true, dim);
-        gogui.startGUI();
-        gogui.setBoardSize(dim);
     }
 
     public Board getBoard() {
@@ -55,7 +50,6 @@ public class Game {
     public void executeTurn(int x, int y) {
         updateTUI();
         players[currentPlayer].makeMove(board, new Position(x, y));
-        addToGUI(x, y);
         autoRemove(x, y);
         writeHistory();
         currentPlayer = otherPlayer;
@@ -126,14 +120,12 @@ public class Game {
             if (board.isPoint(p) && !board.isEmptyPoint(p) && board.numberOfLiberties(p) == 0) {
                 for (Position q : board.defendingCluster(p)) {
                     board.setPoint(q, Stone.EMPTY);
-                    removeFromGUI(x, y);
                 }
             }
         }
         if (!board.isEmptyPoint(new Position(x, y)) && board.numberOfLiberties(new Position(x, y)) == 0) {
             for (Position r : board.defendingCluster(new Position(x, y))) {
                 board.setPoint(r, Stone.EMPTY);
-                removeFromGUI(x, y);
             }
         }
     }
@@ -172,28 +164,7 @@ public class Game {
      * @return boolean
      */
     public boolean hasWinner() {
-        return (players[0].winner | players[1].winner && draw == false);
-    }
-
-
-    /**
-     * adds a stone to the GUI, only the game is allowed to do this.
-     *
-     * @param x
-     * @param y
-     */
-    public void addToGUI(int x, int y) {
-        gogui.addStone(x, y, this.players[currentPlayer].getStone() == Stone.WHITE);
-    }
-
-    /**
-     * removes a stone from the GUI, only the game is allowed to do this.
-     *
-     * @param x
-     * @param y
-     */
-    private void removeFromGUI(int x, int y) {
-        gogui.removeStone(x, y);
+        return (players[0].winner | players[1].winner && !draw);
     }
 
     /**
@@ -204,4 +175,7 @@ public class Game {
     }
 
 
+    public int getCurrentPlayer() {
+        return currentPlayer;
+    }
 }
