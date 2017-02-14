@@ -122,6 +122,7 @@ public class ClientHandler extends Thread {
             String inputMessage[] = message.split(" ");
             if (message.startsWith("PLAYER") && inputMessage.length == 2 && checkName(inputMessage[1]) && clientName == null) {
                 clientName = inputMessage[1];
+                server.clientEntry(this);
                 writeToClient("Your name is " + clientName);
                 System.out.println(clientName + " has entered the arena!");
                 break;
@@ -129,7 +130,7 @@ public class ClientHandler extends Thread {
                 setDim(Integer.parseInt(inputMessage[1]));
                 writeToClient("Dimension entered: " + dim);
                 System.out.println("Game waiting: " + clientName + " " + dim);
-                server.clientEntry(this, dim);
+                server.clientMatcher(this, dim);
                 break;
             } else if (message.startsWith("CHAT")) {
                 server.chatToAllPlayers(clientName + ": " + message);

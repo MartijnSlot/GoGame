@@ -1,11 +1,7 @@
 package com.nedap.university.go.server;
 
 import java.net.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 
 import java.io.*;
 import com.nedap.university.go.server.ClientHandler.ClientStatus;
@@ -23,6 +19,7 @@ public class GoServer extends Thread {
 	private ServerSocket serverSocket;
 	Map<ClientHandler, Integer> clientHandlerMap = new HashMap<>();
 	Map<Integer, List<ClientHandler>> pendingClients = new HashMap<>();
+	Set<ClientHandler> clientSet = new HashSet<>();
 	private int maxClients = 50;
 
 	public GoServer(int port) {
@@ -63,12 +60,15 @@ public class GoServer extends Thread {
 	 */
 	
 	public synchronized void chatToAllPlayers(String message) throws IOException {
-		System.out.println(message);
-		for (ClientHandler a : clientHandlerMap.keySet()) {
+		for (ClientHandler a : clientSet) {
 			a.writeToClient(message);
 		}
 	}
 	
+	void clientEntry(ClientHandler ch) {
+	    clientSet.add(ch);
+    }
+
 	/**
 	 * enter the client into the server list, then into the server waiting list
 	 * if there is another client with the same dimension, it will start a game
@@ -76,7 +76,7 @@ public class GoServer extends Thread {
 	 * @param dim
 	 * @throws IOException
 	 */
-	public void clientEntry(ClientHandler client, int dim) throws IOException {			
+	public void clientMatcher(ClientHandler client, int dim) throws IOException {
 		ArrayList<ClientHandler> clientHandlers = new ArrayList<>();
 		clientHandlers.add(client);
 		clientHandlerMap.put(client, dim);	
@@ -121,7 +121,8 @@ public class GoServer extends Thread {
 	}
 
 	public void statusWaitingToInitial(ClientHandler clientHandler) {
-		pendingClients.get(clientHandler.getDim()).remove(clientHandler);
+		clientHandler.setClientStatus(ClientStatus.PREGAME);
+	    pendingClients.get(clientHandler.getDim()).remove(clientHandler);
 	}
 
 }
