@@ -125,7 +125,6 @@ public class GoClient extends Thread {
                     ", name requirements: \n- name < 20 characters \n- name may only consist out of digits and letters");
             return false;
         }
-        System.out.println("Your name is: " + name);
         return true;
     }
 

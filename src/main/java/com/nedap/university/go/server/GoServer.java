@@ -55,13 +55,6 @@ public class GoServer extends Thread {
 			}
 		}
 	}
-	/**
-	 * getter for the clientHandlerMap
-	 * @return Map<ClientHandler, Integer>
-	 */
-	public Map<ClientHandler, Integer> getClientHandlerMap() {
-		return clientHandlerMap;
-	}
 
 	/**
 	 * Sends out a chatmessage to all players on server
@@ -70,6 +63,7 @@ public class GoServer extends Thread {
 	 */
 	
 	public synchronized void chatToAllPlayers(String message) throws IOException {
+		System.out.println(message);
 		for (ClientHandler a : clientHandlerMap.keySet()) {
 			a.writeToClient(message);
 		}

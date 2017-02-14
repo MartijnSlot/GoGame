@@ -132,7 +132,7 @@ public class ClientHandler extends Thread {
                 server.clientEntry(this, dim);
                 break;
             } else if (message.startsWith("CHAT")) {
-                server.chatToAllPlayers(clientName + message);
+                server.chatToAllPlayers(clientName + ": " + message);
                 System.out.println(clientName + ": " + message);
                 break;
             } else if (message.startsWith("EXIT") && inputMessage.length == 1) {
@@ -167,8 +167,8 @@ public class ClientHandler extends Thread {
         while (message != null && clientStatus == ClientStatus.WAITING) {
             String inputMessage[] = message.split(" ");
             if (message.startsWith("CHAT")) {
-                server.chatToAllPlayers(clientName + " "+ message);
-                System.out.println(message);
+                server.chatToAllPlayers(clientName + ": " + message);
+                System.out.println(clientName + ": " + message);
                 break;
             } else if (message.startsWith("EXIT") && inputMessage.length == 1) {
                 System.out.println(clientName + " has disconnected");
@@ -212,14 +212,17 @@ public class ClientHandler extends Thread {
 
             if (message.startsWith("MOVE") && isParsable(inputMessage[1]) && isParsable(inputMessage[2]) && inputMessage.length == 3 && turn) {
                 sgs.executeTurnMove(Integer.parseInt(inputMessage[1]), Integer.parseInt(inputMessage[2]));
+                break;
             } else if (message.startsWith("PASS") && inputMessage.length == 1 && turn) {
                 sgs.executeTurnPass();
+                break;
             } else if (message.startsWith("TABLEFLIP") && inputMessage.length == 1 && turn) {
                 sgs.executeTurnTableflip();
                 writeToClient("TABLEFLIPPED" + message);
                 playAgain();
             } else if (message.startsWith("CHAT")) {
-                sgs.chatToOtherPlayer(message);
+                sgs.chatToGamePlayers(message);
+                break;
             } else if (message.startsWith("EXIT")) {
                 try {
                     this.join();
@@ -233,6 +236,7 @@ public class ClientHandler extends Thread {
                 outputToClient.write("WARNING gameInput: Must...resist...kicking...you. Message " + message + " is invalid input.");
                 outputToClient.newLine();
                 outputToClient.flush();
+                break;
             }
             if (clientStatus == ClientStatus.PREGAME) {
                 playAgain();
@@ -357,8 +361,9 @@ public class ClientHandler extends Thread {
     }
 
     void setTurn(boolean turn) {
-        writeToClient("It is your turn, " + clientName);
         this.turn = turn;
+        if (turn) writeToClient("It is your turn, " + clientName);
+        else writeToClient("It is not your turn.");
     }
 
     /**

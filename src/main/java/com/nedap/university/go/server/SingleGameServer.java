@@ -114,8 +114,10 @@ public class SingleGameServer {
 	 * writes the chat to opponent
 	 * @throws IOException
 	 */
-	synchronized void chatToOtherPlayer(String message) throws IOException {
-		chs[otherClient].writeToClient(message);
+	synchronized void chatToGamePlayers(String message) throws IOException {
+		System.out.println(message);
+	    for (int i = 0; i < chs.length; i++) {
+		    chs[i].writeToClient(message);
+        }
 	}
-
 }
