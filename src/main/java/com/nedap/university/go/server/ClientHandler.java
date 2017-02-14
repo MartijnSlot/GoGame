@@ -24,6 +24,7 @@ public class ClientHandler extends Thread {
     private ClientStatus clientStatus;
     private int dim;
     private String clientName;
+    private boolean turn = false;
 
     /**
      * threaded clienthandler constructor
@@ -90,7 +91,7 @@ public class ClientHandler extends Thread {
         return dim;
     }
 
-     private void setDim(int d) {
+    private void setDim(int d) {
         dim = d;
     }
 
@@ -204,17 +205,16 @@ public class ClientHandler extends Thread {
      * @throws IOException
      */
     public void gameInput() throws IOException {
-        writeToClient("It is your turn. Options: MOVE x y\nPASS\nTABLEFLIP\nEXIT\n");
         String message = inputFromClient.readLine();
 
         while (message != null && clientStatus == ClientStatus.INGAME) {
             String inputMessage[] = message.split(" ");
 
-            if (message.startsWith("MOVE") && isParsable(inputMessage[1]) && isParsable(inputMessage[2]) && inputMessage.length == 3) {
+            if (message.startsWith("MOVE") && isParsable(inputMessage[1]) && isParsable(inputMessage[2]) && inputMessage.length == 3 && turn) {
                 sgs.executeTurnMove(Integer.parseInt(inputMessage[1]), Integer.parseInt(inputMessage[2]));
-            } else if (message.startsWith("PASS") && inputMessage.length == 1) {
+            } else if (message.startsWith("PASS") && inputMessage.length == 1 && turn) {
                 sgs.executeTurnPass();
-            } else if (message.startsWith("TABLEFLIP") && inputMessage.length == 1) {
+            } else if (message.startsWith("TABLEFLIP") && inputMessage.length == 1 && turn) {
                 sgs.executeTurnTableflip();
                 writeToClient("TABLEFLIPPED" + message);
                 playAgain();
@@ -235,6 +235,7 @@ public class ClientHandler extends Thread {
                 outputToClient.flush();
             }
             if (clientStatus == ClientStatus.PREGAME) {
+                playAgain();
             }
         }
     }
@@ -242,13 +243,12 @@ public class ClientHandler extends Thread {
     /**
      * kicks a player from the server for making an illegal move
      *
-     * @param clientID
      * @throws IOException
      */
-    public void annihilatePlayer(int clientID) throws IOException {
+    public void annihilatePlayer() throws IOException {
         sgs.otherPlayerWins();
-        outputToClient.write("You've been caught cheating, therefore you shall be annihilated!");
-        server.pendingClients.get(this.getDim()).remove(clientID);
+        writeToClient("You've been caught cheating, therefore you shall be annihilated!");
+        server.pendingClients.get(this.getDim()).remove(this);
         outputToClient.close();
         inputFromClient.close();
         server.socket.close();
@@ -346,7 +346,7 @@ public class ClientHandler extends Thread {
      * @param message
      * @throws IOException
      */
-    public synchronized void writeToClient(String message) {
+    synchronized void writeToClient(String message) {
         try {
             outputToClient.write("CHAT from server: " + message);
             outputToClient.newLine();
@@ -354,6 +354,11 @@ public class ClientHandler extends Thread {
         } catch (IOException e) {
             e.getStackTrace();
         }
+    }
+
+    void setTurn(boolean turn) {
+        writeToClient("It is your turn, " + clientName);
+        this.turn = turn;
     }
 
     /**

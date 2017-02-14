@@ -15,6 +15,7 @@ public class SingleGameServer {
 	private ClientHandler[] chs;
 	private Game game;
 	private int currentClient;
+	private int otherClient = (currentClient + 1) % 2;
 
 	
 	/**
@@ -37,10 +38,12 @@ public class SingleGameServer {
 		String opponent1 = b.getClientName();
 		String color1 = "black";
 		chs[0].sendReady(color1, opponent1, dim);
+		chs[0].setTurn(true);
 
 		String opponent2 = a.getClientName();
 		String color2 = "white";
 		chs[1].sendReady(color2, opponent2, dim);
+		chs[0].setTurn(false);
 	}
 
 	/**
@@ -62,10 +65,13 @@ public class SingleGameServer {
 	void executeTurnMove(int col, int row) throws IOException {
 		if (game.getBoard().isAllowed(col, row)) {
 			game.executeTurn(col, row);
+			chs[currentClient].setTurn(false);
+			chs[otherClient].setTurn(true);
+            chs[currentClient].writeToClient("It is not your turn. Options: CHAT\nEXIT\n");
+			chs[otherClient].writeToClient("It is now your turn. Options: MOVE x y\nPASS\nCHAT\nTABLEFLIP\nEXIT\n");
 			setCurrentClient(game.currentPlayer);
-			chs[(currentClient + 1) % 2].writeToClient("MOVE: ");
-			chs[currentClient].setClientStatus(ClientStatus.WAITING);
-			chs[(currentClient + 1) % 2].setClientStatus(ClientStatus.INGAME);
+		} else {
+			chs[currentClient].annihilatePlayer();
 		}
 	}
 
@@ -78,9 +84,9 @@ public class SingleGameServer {
 	void executeTurnPass() throws IOException {
 		game.passMove();
 		setCurrentClient(game.currentPlayer);
-		chs[(currentClient + 1) % 2].writeToClient("PASSED");
-		chs[currentClient].setClientStatus(ClientStatus.WAITING);
-		chs[(currentClient + 1) % 2].setClientStatus(ClientStatus.INGAME);
+		chs[otherClient].writeToClient("PASSED");
+		chs[currentClient].setTurn(false);
+		chs[otherClient].setTurn(true);
 	}
 
 	/**
@@ -90,7 +96,7 @@ public class SingleGameServer {
 	 * @throws IOException
 	 */
 	void executeTurnTableflip() throws IOException {
-		chs[(currentClient + 1) % 2].writeToClient("TABLEFLIPPED");
+		chs[otherClient].writeToClient("TABLEFLIPPED");
 		game.tableflipMove();
 	}
 
@@ -100,7 +106,7 @@ public class SingleGameServer {
 	 * @throws IOException
 	 */
 	void otherPlayerWins() throws IOException {
-		chs[(currentClient + 1) % 2].writeToClient("END");
+		chs[otherClient].writeToClient("END");
 	}
 
 	/**
@@ -109,7 +115,7 @@ public class SingleGameServer {
 	 * @throws IOException
 	 */
 	synchronized void chatToOtherPlayer(String message) throws IOException {
-		chs[(currentClient + 1) % 2].writeToClient(message);
+		chs[otherClient].writeToClient(message);
 	}
 
 }

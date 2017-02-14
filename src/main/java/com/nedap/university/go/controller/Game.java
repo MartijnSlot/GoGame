@@ -21,8 +21,9 @@ public class Game {
     private Board board;
     private Player[] players;
     public int currentPlayer;
+    public int otherPlayer;
     private Set<String> history = new HashSet<>();
-    private boolean draw;
+    private boolean draw = false;
     private static GoGUIIntegrator gogui;
 
     public Game(int dim) {
@@ -31,6 +32,7 @@ public class Game {
         players[0] = new Player(Stone.BLACK);
         players[1] = new Player(Stone.WHITE);
         currentPlayer = 0;
+        otherPlayer = (currentPlayer + 1) % 2;
         draw = false;
         gogui = new GoGUIIntegrator(false, true, dim);
         gogui.startGUI();
@@ -56,7 +58,7 @@ public class Game {
         addToGUI(x, y);
         autoRemove(x, y);
         writeHistory();
-        currentPlayer = (currentPlayer + 1) % numberPlayers;
+        currentPlayer = otherPlayer;
         updateTUI();
     }
 
@@ -65,18 +67,16 @@ public class Game {
      * if both players have passed; determine winner
      */
     public void passMove() {
-        if (!players[(currentPlayer + 1) % numberPlayers].pass) {
-            players[currentPlayer].passes();
-            currentPlayer = (currentPlayer + 1) % numberPlayers;
-        }
-        if (players[(currentPlayer + 1) % numberPlayers].pass && players[currentPlayer].pass) {
+        players[currentPlayer].passes();
+        currentPlayer = otherPlayer;
+        if (players[currentPlayer].getStone() == Stone.WHITE && players[otherPlayer].pass) {
             determineWinner();
         }
 
     }
 
     /**
-     * determines the winner according to the score. Now only count stones
+     * determines the winner according to the score. TODO Now only count stones
      */
     private void determineWinner() {
         if (board.countScore()[0] > board.countScore()[1]) {
@@ -100,7 +100,7 @@ public class Game {
      */
     public void tableflipMove() {
         players[currentPlayer].winner = false;
-        players[(currentPlayer + 1) % numberPlayers].winner = true;
+        players[otherPlayer].winner = true;
     }
 
     /**
@@ -172,7 +172,7 @@ public class Game {
      * @return boolean
      */
     public boolean hasWinner() {
-        return (players[0].winner | players[1].winner);
+        return (players[0].winner | players[1].winner && draw == false);
     }
 
 
