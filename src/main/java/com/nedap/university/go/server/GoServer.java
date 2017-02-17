@@ -15,17 +15,17 @@ import com.nedap.university.go.server.ClientHandler.ClientStatus;
 
 public class GoServer extends Thread {
 
-	public Socket socket;
+	Socket socket;
 	private ServerSocket serverSocket;
 	Map<ClientHandler, Integer> clientHandlerMap = new HashMap<>();
 	Map<Integer, List<ClientHandler>> pendingClients = new HashMap<>();
 	Set<ClientHandler> clientSet = new HashSet<>();
-	private int maxClients = 50;
 
-	public GoServer(int port) {
+    public GoServer(int port) {
 		System.out.println("Starting server on port " + port);
 		try {
-			serverSocket = new ServerSocket(port, maxClients);
+            int maxClients = 50;
+            serverSocket = new ServerSocket(port, maxClients);
 		} catch (IOException e) {
 			System.out.print("Could not listen on port " + port);
 		}
