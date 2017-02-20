@@ -85,8 +85,8 @@ public class ServerHandler extends Thread {
                 break;
 
             } else if (fromServer.startsWith("VALID")) {
-                int col = Integer.parseInt(serverInputMessage[1]);
-                int row = Integer.parseInt(serverInputMessage[2]);
+                int col = Integer.parseInt(serverInputMessage[2]);
+                int row = Integer.parseInt(serverInputMessage[3]);
                 game.executeTurn(row, col);
                 addToGUI(row, col);
                 System.out.println("Move " + fromServer);
@@ -201,6 +201,16 @@ public class ServerHandler extends Thread {
         }
     }
 
+    void handleCancel(String message) {
+        try {
+            writeToServer(message);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        gogui.stopGUI();
+
+    }
+
     /**
      * adds a stone to the GUI, only the game is allowed to do this.
      *
@@ -220,6 +230,7 @@ public class ServerHandler extends Thread {
     private void removeFromGUI(int x, int y) {
         gogui.removeStone(x, y);
     }
-    
-    
+
+
+
 }

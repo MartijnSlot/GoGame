@@ -81,7 +81,6 @@ public class GoClient extends Thread {
                         break;
                     }
                     serverHandler.writeToServer(message);
-
                     break;
                 } else if (message.startsWith("EXIT") && inputMessage.length == 1) {
                     serverHandler.writeToServer(message);
@@ -89,7 +88,7 @@ public class GoClient extends Thread {
                     this.shutdown();
                     break;
                 } else if (message.startsWith("CANCEL") && inputMessage.length == 1) {
-                    serverHandler.writeToServer(message);
+                    serverHandler.handleCancel(message);
                     break;
                 } else if (message.isEmpty()) {
                     System.out.println("WARNING " + message + " is invalid input.");

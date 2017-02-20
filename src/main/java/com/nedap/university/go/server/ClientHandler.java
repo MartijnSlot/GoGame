@@ -207,6 +207,12 @@ public class ClientHandler extends Thread {
      * @throws IOException
      */
     public void gameInput() throws IOException {
+
+        if (turn) {
+            writeToClient("CHAT server: It is your turn: Commands MOVE x y, PASS, TABLEFLIP, CHAT, EXIT.");
+        } else {
+            writeToClient("CHAT server: It is not your turn: Only use CHAT message or EXIT.");
+        }
         String message = inputFromClient.readLine();
 
         while (message != null && clientStatus == ClientStatus.INGAME) {
@@ -222,6 +228,7 @@ public class ClientHandler extends Thread {
                 singleGameServer.executeTurnTableflip();
                 writeToClient("TABLEFLIPPED" + message);
                 playAgain();
+                break;
             } else if (message.startsWith("CHAT")) {
                 singleGameServer.chatToGamePlayers("CHAT " + clientName + ": " + message);
                 break;
@@ -319,17 +326,17 @@ public class ClientHandler extends Thread {
      * @throws IOException
      */
     private boolean playAgain() throws IOException {
-        boolean inputError = false;
+        boolean inputError;
         BufferedReader input = new BufferedReader(new InputStreamReader(System.in));
 
         do {
             writeToClient("CHAT Play again? (Y/N)");
             try {
                 String playAgain = input.readLine();
-                if (playAgain.equals("Y") | playAgain.equals("y") | playAgain.equals("yes")) {
+                if (playAgain.equals("Y") || playAgain.equals("y") || playAgain.equals("yes")) {
                     clientStatus = ClientStatus.PREGAME;
                     return true;
-                } else if (playAgain.equals("N") | playAgain.equals("n") | playAgain.equals("no")) {
+                } else if (playAgain.equals("N") || playAgain.equals("n") || playAgain.equals("no")) {
                     socket.close();
                     inputFromClient.close();
                     outputToClient.close();
@@ -367,6 +374,9 @@ public class ClientHandler extends Thread {
         this.turn = turn;
     }
 
+    /**
+     * @param singleGameServer
+     */
     public void setSingleGameServer(SingleGameServer singleGameServer) {
         this.singleGameServer = singleGameServer;
     }

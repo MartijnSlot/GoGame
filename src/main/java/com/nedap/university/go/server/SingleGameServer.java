@@ -38,7 +38,6 @@ public class SingleGameServer {
 		String color1 = "black";
 		chs[0].sendReady(color1, opponent1, dim);
 		chs[0].setTurn(true);
-        chs[0].askInput();
 
 		String opponent2 = a.getClientName();
 		String color2 = "white";
@@ -63,14 +62,17 @@ public class SingleGameServer {
 	 * @throws IOException
 	 */
 	void executeTurnMove(int x, int y) throws IOException {
+		String color;
+		if (currentClient == 0) color = "black";
+		else color = "white";
 		if (game.getBoard().isAllowed(x, y)) {
 			game.executeTurn(x, y);
-			chatToGamePlayers("VALID " + x + " " + y);
+			chatToGamePlayers("VALID " + color + " " + x + " " + y);
 			setCurrentClient(game.getCurrentPlayer());
 			chs[currentClient].setTurn(true);
 			chs[currentClient].writeToClient("\nCHAT It is now your turn. Options: \nMOVE x y\nPASS\nCHAT\nTABLEFLIP\nEXIT");
 			chs[otherClient].setTurn(false);
-			chs[otherClient].writeToClient("\nCHAT It is not your turn. Options: CHAT\nEXIT");;
+			chs[otherClient].writeToClient("\nCHAT It is not your turn. Options: CHAT\nEXIT");
 		} else {
             chatToGamePlayers("INVALID");
 			chs[currentClient].annihilatePlayer();
@@ -88,7 +90,9 @@ public class SingleGameServer {
 		setCurrentClient(game.getCurrentPlayer());
 		chs[otherClient].writeToClient("PASSED");
 		chs[currentClient].setTurn(true);
+		chs[currentClient].writeToClient("\nCHAT It is now your turn. Options: \nMOVE x y\nPASS\nCHAT\nTABLEFLIP\nEXIT");
 		chs[otherClient].setTurn(false);
+		chs[otherClient].writeToClient("\nCHAT It is not your turn. Options: CHAT\nEXIT");
 	}
 
 	/**
