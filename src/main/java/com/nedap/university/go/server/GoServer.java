@@ -38,13 +38,13 @@ public class GoServer extends Thread {
 
         while (true) {
             try {
+                ClientHandler newClient = new ClientHandler(serverSocket.accept(), this);
                 clientCounter += 1;
                 if (clientCounter >= 500) {
                     System.out.println("Too many Clients!, restart server!");
                     socket.close();
                     break;
                 }
-                ClientHandler newClient = new ClientHandler(serverSocket.accept(), this);
                 System.out.println("Client Accepted! Client count: " + clientCounter);
                 newClient.start();
             } catch (IOException e) {
@@ -60,13 +60,9 @@ public class GoServer extends Thread {
      */
 
     public void chatToAllPlayers(String message) throws IOException {
-        for (ClientHandler clientHandler : clientSet) {
+        for (ClientHandler clientHandler : clientHandlerMap.keySet()) {
             clientHandler.writeToClient(message);
         }
-    }
-
-    void clientEntry(ClientHandler ch) {
-        clientSet.add(ch);
     }
 
     /**
@@ -76,21 +72,19 @@ public class GoServer extends Thread {
      * @param dim
      * @throws IOException
      */
-    void clientMatcher(ClientHandler client, int dim) throws IOException {
+    void addToWaitingList(ClientHandler client, int dim) throws IOException {
         ArrayList<ClientHandler> clientHandlers = new ArrayList<>();
         clientHandlers.add(client);
         clientHandlerMap.put(client, dim);
 
-        while (client.getClientStatus() == ClientStatus.PREGAME) {
-            if (pendingClients.containsKey(dim)) {
-                pendingClients.get(dim).addAll(clientHandlers);
-            } else {
-                pendingClients.put(dim, clientHandlers);
-            }
-
-            client.setClientStatus(ClientStatus.WAITING);
-            matchWaiting();
+        if (pendingClients.containsKey(dim)) {
+            pendingClients.get(dim).addAll(clientHandlers);
+        } else {
+            pendingClients.put(dim, clientHandlers);
         }
+
+        client.setClientStatus(ClientStatus.WAITING);
+        matchWaiting();
     }
 
     private void matchWaiting() {
@@ -103,11 +97,10 @@ public class GoServer extends Thread {
     }
 
     private void startNewGame(int dimBoard) {
-        Random r = new Random();
-        int  n = r.nextInt(1);
-        ClientHandler ch1 = pendingClients.get(dimBoard).get(n);
-        ClientHandler ch2 = pendingClients.get(dimBoard).get(1-n);
+        ClientHandler ch1 = pendingClients.get(dimBoard).get(0);
+        ClientHandler ch2 = pendingClients.get(dimBoard).get(1);
         pendingClients.remove(dimBoard);
+
         ch1.setClientStatus(ClientStatus.INGAME);
         ch2.setClientStatus(ClientStatus.INGAME);
         SingleGameServer singleGameServer = null;

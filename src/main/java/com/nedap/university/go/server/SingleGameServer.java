@@ -1,6 +1,8 @@
 package com.nedap.university.go.server;
 
 import com.nedap.university.go.controller.Game;
+import com.nedap.university.go.model.Stone;
+
 import java.io.IOException;
 
 /**
@@ -35,14 +37,12 @@ public class SingleGameServer {
 		game = new Game(dim);
 
 		String opponent1 = b.getClientName();
-		String color1 = "black";
+		String color1 = game.players[0].getStone().toString();
 		chs[0].sendReady(color1, opponent1, dim);
-		chs[0].setTurn(true);
 
 		String opponent2 = a.getClientName();
-		String color2 = "white";
+		String color2 = game.players[1].getStone().toString();
 		chs[1].sendReady(color2, opponent2, dim);
-		chs[1].setTurn(false);
 	}
 
 	/**
@@ -62,21 +62,7 @@ public class SingleGameServer {
 	 * @throws IOException
 	 */
 	void executeTurnMove(int x, int y) throws IOException {
-		String color;
-		if (currentClient == 0) color = "black";
-		else color = "white";
-		if (game.getBoard().isAllowed(x, y)) {
-			game.executeTurn(x, y);
-			chatToGamePlayers("VALID " + color + " " + x + " " + y);
-			setCurrentClient(game.getCurrentPlayer());
-			chs[currentClient].setTurn(true);
-			chs[currentClient].writeToClient("\nCHAT It is now your turn. Options: \nMOVE x y\nPASS\nCHAT\nTABLEFLIP\nEXIT");
-			chs[otherClient].setTurn(false);
-			chs[otherClient].writeToClient("\nCHAT It is not your turn. Options: CHAT\nEXIT");
-		} else {
-            chatToGamePlayers("INVALID");
-			chs[currentClient].annihilatePlayer();
-		}
+
 	}
 
 	/**
@@ -86,14 +72,8 @@ public class SingleGameServer {
 	 * @throws IOException
 	 */
 	void executeTurnPass() throws IOException {
-		game.passMove();
-		setCurrentClient(game.getCurrentPlayer());
-		chs[otherClient].writeToClient("PASSED");
-		chs[currentClient].setTurn(true);
-		chs[currentClient].writeToClient("\nCHAT It is now your turn. Options: \nMOVE x y\nPASS\nCHAT\nTABLEFLIP\nEXIT");
-		chs[otherClient].setTurn(false);
-		chs[otherClient].writeToClient("\nCHAT It is not your turn. Options: CHAT\nEXIT");
 	}
+
 
 	/**
 	 * executes a 'tableflip' turn
@@ -102,8 +82,7 @@ public class SingleGameServer {
 	 * @throws IOException
 	 */
 	void executeTurnTableflip() throws IOException {
-		chs[otherClient].writeToClient("TABLEFLIPPED");
-		game.tableflipMove();
+
 	}
 
 	/**
@@ -112,7 +91,6 @@ public class SingleGameServer {
 	 * @throws IOException
 	 */
 	void otherPlayerWins() throws IOException {
-		chs[otherClient].writeToClient("END : " + game.getBoard().countScore()[0] + game.getBoard().countScore()[1] );
 	}
 
 	/**
@@ -121,9 +99,6 @@ public class SingleGameServer {
 	 * @throws IOException
 	 */
 	void chatToGamePlayers(String message) throws IOException {
-		System.out.println(message);
-        for (ClientHandler ch : chs) {
-            ch.writeToClient(message);
-        }
+
 	}
 }

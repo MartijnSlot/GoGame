@@ -66,63 +66,6 @@ public class ServerHandler extends Thread {
      */
     private void handleGame(String fromServer) {
 
-        while (fromServer != null) {
-            String serverInputMessage[] = fromServer.split(" ");
-            if (fromServer.startsWith("WAITING")) {
-                System.out.println(fromServer);
-                break;
-            } else if (fromServer.startsWith("READY")) {
-                String color = serverInputMessage[1];
-                if (serverInputMessage[1] == "white") {
-                    white = true;
-                } else {
-                    white = false;
-                }
-                String opponent = serverInputMessage[2];
-                dim = Integer.parseInt(serverInputMessage[3]);
-                System.out.println("Your name: " + clientName + "\nYour color: " + color + "\nYour opponent: " + opponent);
-				game = new Game(dim);
-                break;
-
-            } else if (fromServer.startsWith("VALID")) {
-                int col = Integer.parseInt(serverInputMessage[2]);
-                int row = Integer.parseInt(serverInputMessage[3]);
-                game.executeTurn(row, col);
-                addToGUI(row, col);
-                System.out.println("Move " + fromServer);
-                break;
-            } else if (fromServer.startsWith("INVALID") && serverInputMessage.length == 1) {
-                System.out.println(fromServer + ": kicked from the server due to invalid move");
-                try {
-                    client.shutdown();
-                } catch (IOException e) {
-                    System.out.println("client cannot be shutdowned.");
-                    e.printStackTrace();
-                }
-                break;
-            } else if (fromServer.startsWith("PASSED")) {
-                game.passMove();
-                System.out.println("Other player " + fromServer);
-                break;
-            } else if (fromServer.startsWith("WARNING")) {
-                System.out.println(fromServer + " try something else");
-                break;
-            } else if (fromServer.startsWith("TABLEFLIPPED")) {
-                System.out.println(fromServer);
-                game.tableflipMove();
-                break;
-            } else if (fromServer.startsWith("CHAT")) {
-                System.out.println(fromServer);
-                break;
-            } else if (fromServer.startsWith("END")) {
-                int scoreBlack = Integer.parseInt(serverInputMessage[1]);
-                int scoreWhite = Integer.parseInt(serverInputMessage[2]);
-                System.out.println("Score black: " + scoreBlack + "\nScore white: " + scoreWhite);
-            } else if (!fromServer.isEmpty()){
-                System.out.println("WARNING in the input from server. " + fromServer + " is invalid input.");
-                break;
-            }
-        }
     }
 
     void writeToServer(String message) throws IOException {
@@ -138,25 +81,6 @@ public class ServerHandler extends Thread {
     }
 
     /**
-     * checks whether a move is allowed and not in KO
-     *
-     * @param col
-     * @param row
-     * @return boolean
-     */
-    private boolean moveAllowed(int col, int row) {
-        if (!game.getBoard().isAllowed(col, row)) {
-            System.out.println("\nField " + col + ", " + row + " is no valid position.");
-            return false;
-        } else if (game.inKo(col, row)) {
-            System.out.println("\nField " + col + ", " + row + " is in Ko. \n\nMaar wie is die Ko dan?");
-            return false;
-        } else {
-            return true;
-        }
-    }
-
-    /**
      * checks what to do when the initial command is given by the GoClient
      *
      * @param player
@@ -164,8 +88,6 @@ public class ServerHandler extends Thread {
      * @throws IOException
      */
     void initName(String player, String name) throws IOException {
-        clientName = name;
-        writeToServer(player + " " + name);
     }
 
     /**
@@ -176,11 +98,7 @@ public class ServerHandler extends Thread {
      * @throws IOException
      */
     void initGame(String go, String boardSize) throws IOException {
-        dim = Integer.parseInt(boardSize);
-        gogui = new GoGUIIntegrator(false, true, dim);
-        gogui.startGUI();
-        gogui.setBoardSize(dim);
-        writeToServer(go + " " + boardSize);
+
     }
 
     /**
@@ -192,23 +110,11 @@ public class ServerHandler extends Thread {
      * @throws IOException
      */
     void move(String move, String stringX, String stringY) throws IOException {
-        int x = Integer.parseInt(stringX);
-        int y = Integer.parseInt(stringY);
-        if (!moveAllowed(x, y)) {
-            System.out.print(move + " " + stringX + " " + stringY + " incorrect, try again");
-        } else {
-            writeToServer(move + " " + stringX + " " + stringY);
-        }
+
     }
 
-    void handleCancel(String message) {
-        try {
-            writeToServer(message);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        gogui.stopGUI();
 
+    void handleCancel(String message) {
     }
 
     /**

@@ -195,7 +195,7 @@ public class Board {
 		String boardString = "";
 		for (int i = 0; i < dim; i++) {
 			for (int j = 0; j < dim; j++)
-                boardString = boardString + getPoint(new Position(i, j)).getStone().toString();
+                boardString = boardString + getPoint(new Position(i, j)).getStone().toTUIString();
 		}
 		return boardString;
 	}
@@ -213,7 +213,7 @@ public class Board {
 		for (int i = 0; i < dim; i++) {
 			String row = "" + i;
 			for (int j = 0; j < dim; j++) {
-				row = row + " " + getPoint(new Position(i, j)).getStone().toString();
+				row = row + " " + getPoint(new Position(i, j)).getStone().toTUIString();
 			}
 			s = s + row;
 			if (i < dim) {

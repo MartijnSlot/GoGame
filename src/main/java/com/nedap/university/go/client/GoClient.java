@@ -15,11 +15,9 @@ import java.net.*;
 
 public class GoClient extends Thread {
 
-
     private Socket socket;
     private BufferedReader inputFromPlayer;
     private ServerHandler serverHandler;
-    private static GoGUIIntegrator gogui;
 
 
     public GoClient(String serverAddress, int serverPort) throws IOException {
@@ -55,50 +53,7 @@ public class GoClient extends Thread {
      * @throws IOException
      */
     private void handleInput() throws IOException {
-        do {
-            String message = inputFromPlayer.readLine();
 
-            if (message != null) {
-                String inputMessage[] = message.split(" ");
-                if (message.startsWith("PLAYER") && inputMessage.length == 2 && checkName(inputMessage[1]) && serverHandler.getClientName() == null) {
-                    serverHandler.initName(inputMessage[0], inputMessage[1]);
-                    break;
-                } else if (message.startsWith("GO") && inputMessage.length == 2 && checkDim(inputMessage[1]) && serverHandler.getClientName() != null) {
-                    serverHandler.initGame(inputMessage[0], inputMessage[1]);
-                    break;
-                } else if (message.startsWith("MOVE") && inputMessage.length == 3 && isParsable(inputMessage[1]) && isParsable(inputMessage[2]) && serverHandler.getClientName() != null) {
-                    serverHandler.move(inputMessage[0], inputMessage[1], inputMessage[2]);
-                    break;
-                } else if (message.startsWith("PASS") && inputMessage.length == 1 && serverHandler.getClientName() != null) {
-                    serverHandler.writeToServer(message);
-                    break;
-                } else if (message.startsWith("TABLEFLIP") && inputMessage.length == 1 && serverHandler.getClientName() != null) {
-                    serverHandler.writeToServer(message);
-                    break;
-                } else if (message.startsWith("CHAT")) {
-                    if (serverHandler.getClientName() == null) {
-                        System.out.println("Please enter PLAYER name first.");
-                        break;
-                    }
-                    serverHandler.writeToServer(message);
-                    break;
-                } else if (message.startsWith("EXIT") && inputMessage.length == 1) {
-                    serverHandler.writeToServer(message);
-                    serverHandler.shutdown();
-                    this.shutdown();
-                    break;
-                } else if (message.startsWith("CANCEL") && inputMessage.length == 1) {
-                    serverHandler.handleCancel(message);
-                    break;
-                } else if (message.isEmpty()) {
-                    System.out.println("WARNING " + message + " is invalid input.");
-                    break;
-                } else {
-                    System.out.println("WARNING " + message + " is invalid input.");
-                    break;
-                }
-            }
-        } while (true);
     }
 
     /**

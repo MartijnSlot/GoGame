@@ -18,7 +18,7 @@ public class Game {
 
     private int numberPlayers = 2;
     private Board board;
-    private Player[] players;
+    public Player[] players;
     private int currentPlayer;
     private int otherPlayer;
     private Set<String> history = new HashSet<>();
