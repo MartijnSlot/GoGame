@@ -1,24 +1,24 @@
-package com.nedap.university.go.gocommands.clientcommands;
+package com.nedap.university.go.gocommands.incomingCommandsToServer;
 
 import com.nedap.university.go.gocommands.Command;
 import com.nedap.university.go.server.ClientHandler;
 
-public class PlayerCommand extends Command {
+public class GoCommand extends Command {
 
     private ClientHandler clientHandler;
 
-    public PlayerCommand(String[] splitMessage, ClientHandler clientHandler) {
+    public GoCommand(String[] splitMessage, ClientHandler clientHandler) {
         super();
         this.splitMessage = splitMessage;
         this.clientHandler = clientHandler;
+
     }
 
     @Override
     public void execute() {
         switch (clientHandler.getClientStatus()) {
             case PREGAME:
-                clientHandler.enterPlayerName(splitMessage);
-                clientHandler.writeToClient("CHAT server - Great success! You have entered your name: " + splitMessage[1]);
+                clientHandler.enterDimension(splitMessage);
                 break;
             default:
                 cannotExecute();
@@ -28,7 +28,7 @@ public class PlayerCommand extends Command {
 
     @Override
     protected void cannotExecute() {
-        clientHandler.writeToClient("WARNING Cannot set name, please enter CANCEL first to cancel become a PREGAME-player again. Then you can enter PLAYER name. ");
+        clientHandler.writeToClient("WARNING Cannot GO, you're already GOne, or you've already GO'd. ");
     }
 
 }

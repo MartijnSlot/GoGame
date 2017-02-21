@@ -1,4 +1,4 @@
-package com.nedap.university.go.gocommands.clientcommands;
+package com.nedap.university.go.gocommands.incomingCommandsToServer;
 
 import com.nedap.university.go.gocommands.Command;
 import com.nedap.university.go.server.ClientHandler;
@@ -21,7 +21,7 @@ public class TableFlipCommand extends Command {
         switch (clientHandler.getClientStatus()) {
             case INGAME_NOT_TURN:
             case INGAME_TURN:
-                //TODO cool stuff
+                clientHandler.turnTableflip();
                 break;
             default:
                 cannotExecute();
@@ -31,7 +31,7 @@ public class TableFlipCommand extends Command {
 
     @Override
     protected void cannotExecute() {
-
+        clientHandler.writeToClient("WARNING Cannot tableflip. You must be in a game. ");
     }
 }
 

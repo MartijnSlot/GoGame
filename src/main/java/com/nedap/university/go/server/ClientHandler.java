@@ -27,12 +27,13 @@ public class ClientHandler extends Thread {
     private ClientStatus clientStatus;
     private int dim;
     private String clientName;
+    private int colorInt;
 
     /**
      * threaded clienthandler constructor
      *
-     * @param socket
-     * @param server
+     * @param socket socket
+     * @param server GoServer
      */
     public ClientHandler(Socket socket, GoServer server) {
         this.server = server;
@@ -67,6 +68,16 @@ public class ClientHandler extends Thread {
 
     }
 
+    /**
+     * getter for the color integer
+     * 0 = black
+     * 1 = white
+     * @return
+     */
+    int getColorInt() {
+        return colorInt;
+    }
+
 
     public ClientStatus getClientStatus() {
         return clientStatus;
@@ -86,7 +97,6 @@ public class ClientHandler extends Thread {
      * @throws IOException
      */
     public void annihilatePlayer() throws IOException {
-        singleGameServer.otherPlayerWins();
         writeToClient("CHAT You've been caught cheating, therefore you shall be annihilated!");
         server.pendingClients.get(this.getDim()).remove(this);
         server.clientSet.remove(this);
@@ -99,7 +109,7 @@ public class ClientHandler extends Thread {
     /**
      * checks whether a string input can be parsed to Integer
      *
-     * @param input
+     * @param input string
      * @return boolean
      */
     private boolean isParsable(String input) {
@@ -114,7 +124,7 @@ public class ClientHandler extends Thread {
     /**
      * checks whether the inputname is correct
      *
-     * @param name
+     * @param name string
      * @return boolean
      */
     private boolean checkName(String name) {
@@ -124,7 +134,7 @@ public class ClientHandler extends Thread {
     /**
      * checks whether the given dimension is parsable and correct
      *
-     * @param input
+     * @param input string
      * @return boolean
      */
     private boolean checkDim(String input) {
@@ -153,8 +163,7 @@ public class ClientHandler extends Thread {
     /**
      * general message writer from server to client
      *
-     * @param message
-     * @throws IOException
+     * @param message string
      */
     public void writeToClient(String message) {
         try {
@@ -167,9 +176,11 @@ public class ClientHandler extends Thread {
     }
 
     /**
-     * @param singleGameServer
+     * setter for singlegameserver
+     *
+     * @param singleGameServer singlegameserver
      */
-    public void setSingleGameServer(SingleGameServer singleGameServer) {
+    void setSingleGameServer(SingleGameServer singleGameServer) {
         this.singleGameServer = singleGameServer;
     }
 
@@ -177,20 +188,59 @@ public class ClientHandler extends Thread {
      * make sure the name of this clientHandler is set
      * enters this clienthandler into the list of clients on the server
      *
-      * @param command which is a split String list of the entry by the player
+     * @param splitMessage)  which is a split String list of the entry by the player
      */
-    public void enterPlayerName(String[] command) {
-        if (checkName(command[1]) && command.length == 2) {
-            clientName = command[1];
+    public void enterPlayerName(String[] splitMessage) {
+        if (splitMessage.length == 2 && checkName(splitMessage[1]) && clientName == null) {
+            clientName = splitMessage[1];
+            server.clientSet.add(this);
+            writeToClient("CHAT server - Great success! You have entered your name: " + clientName);
         } else {
             writeToClient("WARNING Please enter PLAYER followed by a lowercase name. " + clientName +
-                    ", name requirements: \n- name < 20 characters \n- name may only consist out of digits and letters");
+                    ", name requirements: \n- name < 20 characters \n- name may only consist out of digits and letters. " +
+                    "\n Or you already have entered a name.");
         }
-        server.clientSet.add(this);
     }
 
-    public void cancelWaiting() {
-        this.setClientStatus(ClientStatus.PREGAME);
-        server.statusWaitingToInitial(this);
+    public void cancelWaiting(String[] splitMessage) {
+        if (splitMessage.length == 1) {
+            this.setClientStatus(ClientStatus.PREGAME);
+            server.statusWaitingToInitial(this);
+            writeToClient("CHAT server - Great success! You have set your status to PREGAME. Please enter GO boardsize, " + clientName);
+        } else {
+            writeToClient("WARNING Status not changed, you are still waiting for a game. ");
+        }
+    }
+
+    public void chatToAll(String[] splitMessage) {
+        String message = sowString(splitMessage);
+        server.chatToAllPlayers(message);
+    }
+
+    public void chatToOpponent(String[] splitMessage) {
+        String message = sowString(splitMessage);
+        singleGameServer.chatToGamePlayers(message);
+    }
+
+    private String sowString(String[] splitMessage) {
+        String temp = null;
+        for (String messageItem : splitMessage) {
+            temp = temp + messageItem + " ";
+        }
+        temp = temp != null ? temp.trim() : null;
+        return temp;
+    }
+
+    public void enterDimension(String[] splitMessage) {
+        if (splitMessage.length == 2 && checkDim(splitMessage[1])) {
+
+            writeToClient("CHAT server - Great success! You have set your status to PREGAME. Please enter GO boardsize, " + clientName);
+        } else {
+            writeToClient("WARNING Status not changed, you are still waiting for a game. ");
+        }
+    }
+
+    public void turnTableflip() {
+        singleGameServer.executeTurnTableflip(this);
     }
 }

@@ -2,8 +2,8 @@ package com.nedap.university.go.gocommands;
 
 import com.nedap.university.go.client.ServerHandler;
 import com.nedap.university.go.server.ClientHandler;
-import com.nedap.university.go.gocommands.clientcommands.*;
-import com.nedap.university.go.gocommands.servercommands.*;
+import com.nedap.university.go.gocommands.incomingCommandsToServer.*;
+import com.nedap.university.go.gocommands.incomingCommandsToClient.*;
 
 
 /**

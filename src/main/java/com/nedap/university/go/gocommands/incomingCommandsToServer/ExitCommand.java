@@ -1,4 +1,4 @@
-package com.nedap.university.go.gocommands.clientcommands;
+package com.nedap.university.go.gocommands.incomingCommandsToServer;
 
 import com.nedap.university.go.gocommands.Command;
 import com.nedap.university.go.server.ClientHandler;
@@ -6,13 +6,13 @@ import com.nedap.university.go.server.ClientHandler;
 /**
  * Created by martijn.slot on 21/02/2017.
  */
-public class ClientChatCommand extends Command {
+public class ExitCommand extends Command {
 
     private ClientHandler clientHandler;
 
-    public ClientChatCommand(String[] command, ClientHandler clientHandler) {
+    public ExitCommand(String[] splitMessage, ClientHandler clientHandler) {
         super();
-        this.splitMessage = command;
+        this.splitMessage = splitMessage;
         this.clientHandler = clientHandler;
     }
 
@@ -23,13 +23,12 @@ public class ClientChatCommand extends Command {
             case WAITING:
             case INGAME_NOT_TURN:
             case INGAME_TURN:
-
+                //TODO cool stuff
                 break;
             default:
                 cannotExecute();
                 break;
         }
-
     }
 
     @Override

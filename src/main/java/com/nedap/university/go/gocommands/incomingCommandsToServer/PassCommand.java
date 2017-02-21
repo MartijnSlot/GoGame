@@ -1,4 +1,4 @@
-package com.nedap.university.go.gocommands.clientcommands;
+package com.nedap.university.go.gocommands.incomingCommandsToServer;
 
 import com.nedap.university.go.gocommands.Command;
 import com.nedap.university.go.server.ClientHandler;

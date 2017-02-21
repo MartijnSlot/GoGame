@@ -72,6 +72,16 @@ public class Game {
     /**
      * determines the winner according to the score. TODO Now only count stones
      */
+
+    public int[] getScores() {
+        int[] endScores = null;
+        for (int i = 0; i < players.length; i++) {
+            int temp = players[i].getScore();
+            endScores[i] = temp;
+        }
+        return endScores;
+    }
+
     private void determineWinner() {
         if (board.countScore()[0] > board.countScore()[1]) {
             for (int i = 0; i < numberPlayers; i++) {
@@ -92,9 +102,14 @@ public class Game {
      * tableflip mechanism
      * sets a player to winner
      */
-    public void tableflipMove() {
-        players[currentPlayer].winner = false;
-        players[otherPlayer].winner = true;
+    public void tableflipMove(int playerNumber) {
+        players[playerNumber].winner = false;
+        players[playerNumber].setScore(-1);
+        players[(playerNumber + 1) % 2].winner = true;
+        players[(playerNumber + 1) % 2].setScore(-1);
+        if(this.hasWinner()){
+            reset();
+        }
     }
 
     /**
@@ -177,5 +192,13 @@ public class Game {
 
     public int getCurrentPlayer() {
         return currentPlayer;
+    }
+
+    public Player getPlayer1() {
+        return players[0];
+    }
+
+    public Player getPlayer2() {
+        return players[1];
     }
 }

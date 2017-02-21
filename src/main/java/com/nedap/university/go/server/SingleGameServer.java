@@ -1,13 +1,14 @@
 package com.nedap.university.go.server;
 
 import com.nedap.university.go.controller.Game;
+import com.nedap.university.go.model.Player;
 import com.nedap.university.go.model.Stone;
 
 import java.io.IOException;
 
 /**
  * Class for creating a server for a single game.
- * 
+ *
  * @author Martijn Slot
  * @version 1.0
  */
@@ -16,9 +17,8 @@ public class SingleGameServer {
 	private ClientHandler[] chs;
 	private Game game;
 	private int currentClient = 0;
-	private int otherClient = (currentClient + 1) % 2;
 
-	
+
 	/**
 	 * Constructor: starts a game with two clientHandlers and sends out the ready signal
 	 * @param a
@@ -37,12 +37,10 @@ public class SingleGameServer {
 		game = new Game(dim);
 
 		String opponent1 = b.getClientName();
-		String color1 = game.players[0].getStone().toString();
-		chs[0].sendReady(color1, opponent1, dim);
+		String color1 = game.getPlayer1().getStone().toString();
 
 		String opponent2 = a.getClientName();
-		String color2 = game.players[1].getStone().toString();
-		chs[1].sendReady(color2, opponent2, dim);
+		String color2 = game.getPlayer2().getStone().toString();
 	}
 
 	/**
@@ -52,7 +50,7 @@ public class SingleGameServer {
 	void setCurrentClient(int a) {
 		this.currentClient = a;
 	}
-	
+
 	/**
 	 * executes a 'move'  turn, moves a stone on x (col), y (row)
 	 * writes the move to all participating clients
@@ -81,24 +79,30 @@ public class SingleGameServer {
 	 * finishes the game
 	 * @throws IOException
 	 */
-	void executeTurnTableflip() throws IOException {
-
+	void executeTurnTableflip(ClientHandler clientHandler) {
+		game.tableflipMove(clientHandler.getColorInt());
+		chatToGamePlayers("CHAT server - " + clientHandler.getClientName() + " has flipped.\n");
+		chatToGamePlayers("END " + endGame());
 	}
 
-	/**
-	 * the other player wins
-	 * writes the end move to opponent
-	 * @throws IOException
-	 */
-	void otherPlayerWins() throws IOException {
+	private String endGame() {
+		String endScores = null;
+		for (int i : game.getScores()) {
+			endScores = endScores + i + " ";
+		}
+		endScores = endScores.trim();
+		return endScores;
 	}
 
+
 	/**
-	 * chat to the other player
-	 * writes the chat to opponent
+	 * chat to the all game players
+	 *
 	 * @throws IOException
 	 */
-	void chatToGamePlayers(String message) throws IOException {
-
+	void chatToGamePlayers(String message) {
+		for (int i = 0; i < chs.length; i++) {
+			chs[i].writeToClient(message);
+		}
 	}
 }

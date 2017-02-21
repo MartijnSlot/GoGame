@@ -57,8 +57,8 @@ public class GoServer extends Thread {
      * @throws IOException
      */
 
-    public void chatToAllPlayers(String message) throws IOException {
-        for (ClientHandler clientHandler : clientHandlerMap.keySet()) {
+    public void chatToAllPlayers(String message) {
+        for (ClientHandler clientHandler : clientSet) {
             clientHandler.writeToClient(message);
         }
     }
