@@ -6,8 +6,9 @@ import com.nedap.university.go.gocommands.Command;
 /**
  * Created by martijn.slot on 21/02/2017.
  */
-public class WarningCommand extends Command {
-    public WarningCommand(String[] splitMessage, ServerHandler serverHandler) {
+public class ServerChatCommand extends Command {
+
+    public ServerChatCommand(String[] splitMessage, ServerHandler serverHandler) {
         super();
     }
 
@@ -20,4 +21,5 @@ public class WarningCommand extends Command {
     protected void cannotExecute() {
         return null;
     }
+
 }

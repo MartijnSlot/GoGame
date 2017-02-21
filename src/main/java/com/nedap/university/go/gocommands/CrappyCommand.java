@@ -3,9 +3,19 @@ package com.nedap.university.go.gocommands;
 /**
  * Created by martijn.slot on 21/02/2017.
  */
-public class CrappyCommand {
+public class CrappyCommand extends Command {
 
-    public CrappyCommand(String command) {
+    public CrappyCommand(String[] command) {
+        execute();
     }
 
+    @Override
+    public void execute() {
+
+    }
+
+    @Override
+    protected void cannotExecute() {
+        return null;
+    }
 }

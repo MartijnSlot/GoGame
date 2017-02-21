@@ -1,5 +1,8 @@
 package com.nedap.university.go.server;
 
+import com.nedap.university.go.gocommands.Command;
+import com.nedap.university.go.gocommands.DetermineCommand;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -51,35 +54,21 @@ public class ClientHandler extends Thread {
     public void run() {
         try {
             while (socket.isConnected()) {
-                switch (clientStatus) {
-                    case PREGAME:
-                        preGameInput();
-                        writeToClient("CHAT server: ClientStatus " + clientStatus);
-                        break;
-                    case WAITING:
-                        waitingInput();
-                        writeToClient("CHAT server: ClientStatus " + clientStatus);
-                        break;
-                    case INGAME:
-                        gameInput();
-                        writeToClient("CHAT server: ClientStatus " + clientStatus);
-                        break;
-                    default:
-                        System.out.println("Hier mag ik nooit komen...");
-                        break;
-                }
+                Command command = DetermineCommand.determineServerCommand(inputFromClient.readLine(), this);
+                command.execute();
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    void setClientStatus(ClientStatus cs) {
-        this.clientStatus = cs;
+    void setClientStatus(ClientStatus clientStatus) {
+        this.clientStatus = clientStatus;
 
     }
 
-    ClientStatus getClientStatus() {
+
+    public ClientStatus getClientStatus() {
         return clientStatus;
     }
 
@@ -89,48 +78,6 @@ public class ClientHandler extends Thread {
 
     int getDim() {
         return dim;
-    }
-
-    /**
-     * sends out the READY message with playercolor, opponentname and boardsize.
-     *
-     * @param color
-     * @param opponent
-     * @param boardSize
-     * @throws IOException
-     */
-    void sendReady(String color, String opponent, int boardSize) throws IOException {
-        outputToClient.write("READY " + color + " " + opponent + " " + boardSize);
-        outputToClient.newLine();
-        outputToClient.flush();
-    }
-
-    /**
-     * Possible inputs from the client with the status PREGAME and the following actions
-     *
-     * @throws IOException
-     */
-    private void preGameInput() throws IOException {
-
-    }
-
-
-    /**
-     * Possible inputs from the client with the status WAITING and the following actions
-     *
-     * @throws IOException
-     */
-    private void waitingInput() throws IOException {
-
-    }
-
-    /**
-     * Possible inputs from the client with the status INGAME and the following actions
-     *
-     * @throws IOException
-     */
-    public void gameInput() throws IOException {
-
     }
 
     /**
@@ -171,12 +118,7 @@ public class ClientHandler extends Thread {
      * @return boolean
      */
     private boolean checkName(String name) {
-        if (name.length() > 20 | name.matches(".*\\W+.*")) {
-            writeToClient("CHAT Server: Illegal input " + name +
-                    ", name requirements: \n- name < 20 characters \n- name may only consist out of digits and letters");
-            return false;
-        }
-        return true;
+        return !(name.length() > 20 | name.matches(".*\\W+.*"));
     }
 
     /**
@@ -214,7 +156,7 @@ public class ClientHandler extends Thread {
      * @param message
      * @throws IOException
      */
-    void writeToClient(String message) {
+    public void writeToClient(String message) {
         try {
             outputToClient.write(message);
             outputToClient.newLine();
@@ -232,13 +174,23 @@ public class ClientHandler extends Thread {
     }
 
     /**
-     * enum for ClientStatus
+     * make sure the name of this clientHandler is set
+     * enters this clienthandler into the list of clients on the server
      *
-     * @author martijn.slot
+      * @param command which is a split String list of the entry by the player
      */
-    public enum ClientStatus {
-
-        PREGAME, WAITING, INGAME;
+    public void enterPlayerName(String[] command) {
+        if (checkName(command[1]) && command.length == 2) {
+            clientName = command[1];
+        } else {
+            writeToClient("WARNING Please enter PLAYER followed by a lowercase name. " + clientName +
+                    ", name requirements: \n- name < 20 characters \n- name may only consist out of digits and letters");
+        }
+        server.clientSet.add(this);
     }
 
+    public void cancelWaiting() {
+        this.setClientStatus(ClientStatus.PREGAME);
+        server.statusWaitingToInitial(this);
+    }
 }

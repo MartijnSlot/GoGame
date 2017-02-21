@@ -2,9 +2,7 @@ package com.nedap.university.go.server;
 
 import java.net.*;
 import java.util.*;
-
 import java.io.*;
-import com.nedap.university.go.server.ClientHandler.ClientStatus;
 
 /**
  * Class for creating a general server.
@@ -84,10 +82,10 @@ public class GoServer extends Thread {
         }
 
         client.setClientStatus(ClientStatus.WAITING);
-        matchWaiting();
+        matchWaitingPlayers();
     }
 
-    private void matchWaiting() {
+    private void matchWaitingPlayers() {
         for (int dimBoard : pendingClients.keySet()) {
             if (pendingClients.get(dimBoard).size() == 2) {
                 startNewGame(dimBoard);
@@ -101,8 +99,8 @@ public class GoServer extends Thread {
         ClientHandler ch2 = pendingClients.get(dimBoard).get(1);
         pendingClients.remove(dimBoard);
 
-        ch1.setClientStatus(ClientStatus.INGAME);
-        ch2.setClientStatus(ClientStatus.INGAME);
+        ch1.setClientStatus(ClientStatus.INGAME_TURN);
+        ch2.setClientStatus(ClientStatus.INGAME_NOT_TURN);
         SingleGameServer singleGameServer = null;
         try {
             singleGameServer = new SingleGameServer(ch1, ch2, dimBoard);
@@ -120,6 +118,7 @@ public class GoServer extends Thread {
     public void removeClient(ClientHandler clientHandler) {
         try {
             clientHandlerMap.remove(clientHandler);
+            clientSet.remove(clientHandler);
             socket.close();
         } catch (IOException e) {
             e.printStackTrace();
@@ -127,7 +126,6 @@ public class GoServer extends Thread {
     }
 
     public void statusWaitingToInitial(ClientHandler clientHandler) {
-        clientHandler.setClientStatus(ClientStatus.PREGAME);
         pendingClients.get(clientHandler.getDim()).remove(clientHandler);
     }
 

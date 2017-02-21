@@ -29,7 +29,7 @@ public interface Protocol {
     /**
      * WARNING message
      *
-     * String message from the server to the client, only send when a command is incorrect
+     * String message from the server to the client, only send when a splitMessage is incorrect
      */
     String WARNING = "WARNING";
 

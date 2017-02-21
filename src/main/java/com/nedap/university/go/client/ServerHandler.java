@@ -1,6 +1,7 @@
 package com.nedap.university.go.client;
 
 import com.nedap.university.go.controller.Game;
+import com.nedap.university.go.gocommands.DetermineCommand;
 import com.nedap.university.go.model.Stone;
 import com.nedap.university.go.viewer.GoGUIIntegrator;
 
@@ -48,7 +49,7 @@ public class ServerHandler extends Thread {
         try {
             while (socket.isConnected()) {
                 String fromServer = inputFromServer.readLine();
-                handleGame(fromServer);
+                DetermineCommand.determineClientCommand(fromServer, this);
             }
         } catch (IOException e1) {
             System.out.println("No input");
@@ -57,15 +58,6 @@ public class ServerHandler extends Thread {
 
     String getClientName() {
         return clientName;
-    }
-
-    /**
-     * Handles all incoming messages from the clientHandler
-     *
-     * @param fromServer message from server
-     */
-    private void handleGame(String fromServer) {
-
     }
 
     void writeToServer(String message) throws IOException {
@@ -81,7 +73,7 @@ public class ServerHandler extends Thread {
     }
 
     /**
-     * checks what to do when the initial command is given by the GoClient
+     * checks what to do when the initial splitMessage is given by the GoClient
      *
      * @param player
      * @param name
@@ -91,7 +83,7 @@ public class ServerHandler extends Thread {
     }
 
     /**
-     * checks what to do when the initial command is given by the GoClient
+     * checks what to do when the initial splitMessage is given by the GoClient
      *
      * @param go
      * @param boardSize
