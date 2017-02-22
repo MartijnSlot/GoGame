@@ -2,7 +2,6 @@ package com.nedap.university.go.client;
 
 import com.nedap.university.go.controller.Game;
 import com.nedap.university.go.gocommands.DetermineCommand;
-import com.nedap.university.go.model.Stone;
 import com.nedap.university.go.viewer.GoGUIIntegrator;
 
 import java.io.BufferedReader;
@@ -30,6 +29,7 @@ public class ServerHandler extends Thread {
     private Socket socket;
     private GoGUIIntegrator gogui;
     private boolean white;
+    private ClientStatus clientStatus;
 
 
     public ServerHandler(GoClient client, Socket socket) {
@@ -54,6 +54,14 @@ public class ServerHandler extends Thread {
         } catch (IOException e1) {
             System.out.println("No input");
         }
+    }
+
+    void setClientStatus(ClientStatus clientStatus) {
+        this.clientStatus = clientStatus;
+    }
+
+    ClientStatus getClientStatus() {
+        return clientStatus;
     }
 
     String getClientName() {

@@ -20,7 +20,11 @@ public class CancelCommand extends Command {
     public void execute() {
         switch (clientHandler.getClientStatus()) {
             case WAITING:
-                clientHandler.cancelWaiting(splitMessage);
+                if (splitMessage.length == 1) {
+                    clientHandler.handleCancelCommand(splitMessage);
+                } else {
+                    clientHandler.writeToClient("WARNING Wrong input. Status not changed, you are still waiting for a game. ");
+                }
                 break;
             default:
                 cannotExecute();

@@ -70,7 +70,7 @@ public class GoServer extends Thread {
      * @param dim
      * @throws IOException
      */
-    void addToWaitingList(ClientHandler client, int dim) throws IOException {
+    void addToWaitingList(ClientHandler client, int dim) {
         ArrayList<ClientHandler> clientHandlers = new ArrayList<>();
         clientHandlers.add(client);
         clientHandlerMap.put(client, dim);
@@ -104,6 +104,7 @@ public class GoServer extends Thread {
         SingleGameServer singleGameServer = null;
         try {
             singleGameServer = new SingleGameServer(ch1, ch2, dimBoard);
+            singleGameServer.startGame(ch1, ch2, dimBoard);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -113,11 +114,12 @@ public class GoServer extends Thread {
 
     /**
      * removes a client from the server clientlist
-     * @param clientHandler
+     * @param clientHandler to remove
      */
-    public void removeClient(ClientHandler clientHandler) {
+    void eraseClient(ClientHandler clientHandler) {
         try {
             clientHandlerMap.remove(clientHandler);
+            pendingClients.get(clientHandler.getDim()).remove(clientHandler);
             clientSet.remove(clientHandler);
             socket.close();
         } catch (IOException e) {
@@ -125,7 +127,7 @@ public class GoServer extends Thread {
         }
     }
 
-    public void statusWaitingToInitial(ClientHandler clientHandler) {
+    void statusWaitingToInitial(ClientHandler clientHandler) {
         pendingClients.get(clientHandler.getDim()).remove(clientHandler);
     }
 

@@ -102,11 +102,11 @@ public class Game {
      * tableflip mechanism
      * sets a player to winner
      */
-    public void tableflipMove(int playerNumber) {
-        players[playerNumber].winner = false;
-        players[playerNumber].setScore(-1);
-        players[(playerNumber + 1) % 2].winner = true;
-        players[(playerNumber + 1) % 2].setScore(-1);
+    public void tableflipMove(String color) {
+        players[color.equals("white") ? 1 : 0].winner = false;
+        players[color.equals("white") ? 1 : 0].setScore(-1);
+        players[color.equals("white") ? 0 : 1].winner = true;
+        players[color.equals("white") ? 0 : 1].setScore(-1);
         if(this.hasWinner()){
             reset();
         }
@@ -151,6 +151,17 @@ public class Game {
      */
     private void writeHistory() {
         history.add(this.board.toSimpleString());
+    }
+
+    /**
+     * checks if the placement of a stone exists, is not occupied and in accordance with the <i>ko-rule</i>
+     *
+     * @param x int dim
+     * @param y int dim
+     * @return allowed
+     */
+    public boolean moveAllowed(int x, int y) {
+        return (board.isAllowed(x, y) && !inKo(x, y));
     }
 
     /**
@@ -200,5 +211,9 @@ public class Game {
 
     public Player getPlayer2() {
         return players[1];
+    }
+
+    public boolean getDraw() {
+        return draw;
     }
 }

@@ -1,7 +1,6 @@
 package com.nedap.university.go.server;
 
 import com.nedap.university.go.controller.Game;
-import com.nedap.university.go.model.Player;
 import com.nedap.university.go.model.Stone;
 
 import java.io.IOException;
@@ -30,17 +29,8 @@ public class SingleGameServer {
 		chs = new ClientHandler[2];
 		this.chs[0] = a;
 		this.chs[1] = b;
-
-		String playerNames[] = new String[2];
-		playerNames[0] = a.getClientName();
-		playerNames[1] = b.getClientName();
 		game = new Game(dim);
 
-		String opponent1 = b.getClientName();
-		String color1 = game.getPlayer1().getStone().toString();
-
-		String opponent2 = a.getClientName();
-		String color2 = game.getPlayer2().getStone().toString();
 	}
 
 	/**
@@ -51,25 +41,50 @@ public class SingleGameServer {
 		this.currentClient = a;
 	}
 
+	void startGame(ClientHandler a, ClientHandler b, int dim) {
+        String playerNames[] = new String[2];
+        playerNames[0] = a.getClientName();
+        playerNames[1] = b.getClientName();
+
+        String opponentOf0 = playerNames[1];
+        chs[0].setColor("black");
+        chs[0].writeToClient("READY black " + opponentOf0 + dim);
+
+        String opponentOf1 = playerNames[0];
+        chs[1].setColor("white");
+        chs[0].writeToClient("READY white " + opponentOf1 + dim);
+    }
+
 	/**
 	 * executes a 'move'  turn, moves a stone on x (col), y (row)
 	 * writes the move to all participating clients
 	 * sets the players' statuses
-	 * @param x
-	 * @param y
-	 * @throws IOException
+	 * @param x dimension
+	 * @param y dimension
 	 */
-	void executeTurnMove(int x, int y) throws IOException {
+	void executeTurnMove(int x, int y, ClientHandler clientHandler) {
+	    if (game.moveAllowed(x, y)) {
+	        game.executeTurn(x, y);
+	        sendToPlayers("VALID " + clientHandler.getColor() + x + y);
+	        switchTurns(clientHandler);
+	    } else {
+            sendToPlayers("INVALID " + clientHandler.getColor() + x + y);
+            clientHandler.annihilatePlayer();
 
+        }
 	}
 
-	/**
+    /**
 	 * executes a 'pass' turn
 	 * writes the pass to all participating clients
 	 * sets the players' statuses
-	 * @throws IOException
 	 */
-	void executeTurnPass() throws IOException {
+	void executeTurnPass(ClientHandler clientHandler) {
+        game.passMove();
+        if (!game.getDraw() || game.hasWinner()) {
+            endGame();
+        }
+        switchTurns(clientHandler);
 	}
 
 
@@ -77,14 +92,17 @@ public class SingleGameServer {
 	 * executes a 'tableflip' turn
 	 * writes the tableflip to opponent
 	 * finishes the game
-	 * @throws IOException
 	 */
 	void executeTurnTableflip(ClientHandler clientHandler) {
-		game.tableflipMove(clientHandler.getColorInt());
-		chatToGamePlayers("CHAT server - " + clientHandler.getClientName() + " has flipped.\n");
-		chatToGamePlayers("END " + endGame());
+		game.tableflipMove(clientHandler.getColor());
+		sendToPlayers("CHAT server - " + clientHandler.getClientName() + " has flipped.\n");
+		sendToPlayers("END " + endGame());
 	}
 
+	/**
+	 * get the scores from the game and put them in a nice string
+	 * @return String of endScores
+	 */
 	private String endGame() {
 		String endScores = null;
 		for (int i : game.getScores()) {
@@ -98,11 +116,21 @@ public class SingleGameServer {
 	/**
 	 * chat to the all game players
 	 *
-	 * @throws IOException
 	 */
-	void chatToGamePlayers(String message) {
-		for (int i = 0; i < chs.length; i++) {
-			chs[i].writeToClient(message);
+	void sendToPlayers(String message) {
+		for (ClientHandler ch : chs) {
+			ch.writeToClient(message);
 		}
 	}
+
+    private void switchTurns(ClientHandler clientHandler) {
+        clientHandler.setClientStatus(ClientStatus.INGAME_NOT_TURN);
+	    if (clientHandler.equals(chs[0])) {
+            chs[1].setClientStatus(ClientStatus.INGAME_TURN);
+            chs[1].writeToClient("CHAT server - your turn, white");
+        } else {
+            chs[0].setClientStatus(ClientStatus.INGAME_TURN);
+            chs[0].writeToClient("CHAT server - your turn, black");
+        }
+    }
 }

@@ -21,7 +21,11 @@ public class MoveCommand extends Command {
     public void execute() {
         switch (clientHandler.getClientStatus()) {
             case INGAME_TURN:
-                //TODO cool stuff
+                if (splitMessage.length == 3 && isParsable(splitMessage[1]) && isParsable(splitMessage[2])) {
+                    clientHandler.handleMoveCommand(splitMessage);
+                } else {
+                    clientHandler.writeToClient("WARNING MOVE command syntax not OK. Please repeat. ");
+                }
                 break;
             default:
                 cannotExecute();
@@ -31,7 +35,16 @@ public class MoveCommand extends Command {
 
     @Override
     protected void cannotExecute() {
-        return null;
+        clientHandler.writeToClient("WARNING Don't MOVE! Wait for your turn like the rest of us. ");
+    }
+
+    private boolean isParsable(String input) {
+        try {
+            Integer.parseInt(input);
+        } catch (NumberFormatException e) {
+            return false;
+        }
+        return true;
     }
 
 }

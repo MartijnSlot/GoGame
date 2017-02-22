@@ -23,7 +23,11 @@ public class ExitCommand extends Command {
             case WAITING:
             case INGAME_NOT_TURN:
             case INGAME_TURN:
-                //TODO cool stuff
+                if (splitMessage.length == 1) {
+                    clientHandler.handleExitCommand(splitMessage);
+                } else {
+                    clientHandler.writeToClient("WARNING don't put any arguments after EXIT. ");
+                }
                 break;
             default:
                 cannotExecute();
@@ -33,7 +37,7 @@ public class ExitCommand extends Command {
 
     @Override
     protected void cannotExecute() {
-
+        clientHandler.writeToClient("CHAT Exit cannot lead to this.");
     }
 
 }

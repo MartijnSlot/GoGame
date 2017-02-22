@@ -21,7 +21,11 @@ public class TableFlipCommand extends Command {
         switch (clientHandler.getClientStatus()) {
             case INGAME_NOT_TURN:
             case INGAME_TURN:
-                clientHandler.turnTableflip();
+                if (splitMessage.length == 1) {
+                    clientHandler.handleTableflipCommand();
+                } else {
+                    clientHandler.writeToClient("WARNING tableflip incomplete, table too heavy. ");
+                }
                 break;
             default:
                 cannotExecute();

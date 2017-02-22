@@ -20,7 +20,7 @@ public class PassCommand extends Command {
     public void execute() {
         switch (clientHandler.getClientStatus()) {
             case INGAME_TURN:
-                //TODO cool stuff
+                clientHandler.handlePassCommand(splitMessage);
                 break;
             default:
                 cannotExecute();
