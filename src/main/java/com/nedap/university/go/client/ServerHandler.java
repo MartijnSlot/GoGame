@@ -86,7 +86,26 @@ public class ServerHandler extends Thread {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
 
+    private String sewString(String[] splitMessage) {
+        String temp = null;
+        for (String messageItem : splitMessage) {
+            temp = temp + messageItem + Protocol.DELIMITER;
+        }
+        temp = temp != null ? temp.trim() : null;
+        return temp;
+    }
+
+
+    private void switchTurns() {
+        if (clientStatus == ClientStatus.INGAME_NOT_TURN) {
+            setClientStatus(ClientStatus.INGAME_TURN);
+            System.out.println("CHAT server - your turn, " + color + clientName);
+        } else {
+            setClientStatus(ClientStatus.INGAME_NOT_TURN);
+            System.out.println("CHAT server - NOT your turn, " + color + clientName);
+        }
     }
 
     /**
@@ -135,14 +154,18 @@ public class ServerHandler extends Thread {
         client.shutdown();
     }
 
-    private void switchTurns() {
-        if (clientStatus == ClientStatus.INGAME_NOT_TURN) {
-            setClientStatus(ClientStatus.INGAME_TURN);
-            System.out.println("CHAT server - your turn, " + color + clientName);
-        } else {
-            setClientStatus(ClientStatus.INGAME_NOT_TURN);
-            System.out.println("CHAT server - NOT your turn, " + color + clientName);
-        }
+    public void handleIncomingChat(String[] splitMessage) {
+        String chat = sewString(splitMessage);
+        System.out.println(chat);
     }
 
+    public void handleTableFlipped(String[] splitMessage) {
+        String chat = sewString(splitMessage);
+        System.out.println(chat);
+    }
+
+    public void handleWarning(String[] splitMessage) {
+        String chat = sewString(splitMessage);
+        System.out.println(chat);
+    }
 }

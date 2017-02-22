@@ -8,12 +8,18 @@ import com.nedap.university.go.gocommands.Command;
  */
 public class TableFlippedCommand extends Command {
 
+    private ServerHandler serverHandler;
+
     public TableFlippedCommand(String[] splitMessage, ServerHandler serverHandler) {
+
         super();
+        this.splitMessage = splitMessage;
+        this.serverHandler = serverHandler;
     }
 
     @Override
     public void execute() {
+        serverHandler.handleTableFlipped(splitMessage);
 
     }
 }

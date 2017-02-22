@@ -8,12 +8,18 @@ import com.nedap.university.go.gocommands.Command;
  */
 public class ServerChatCommand extends Command {
 
+    private ServerHandler serverHandler;
+
     public ServerChatCommand(String[] splitMessage, ServerHandler serverHandler) {
+
         super();
+        this.splitMessage = splitMessage;
+        this.serverHandler = serverHandler;
     }
 
     @Override
     public void execute() {
+        serverHandler.handleIncomingChat(splitMessage);
 
     }
 

@@ -15,13 +15,6 @@ public class SingleGameServer {
 	private ClientHandler[] chs;
 	private Game game;
 
-	/**
-	 * Constructor: starts a game with two clientHandlers and sends out the ready signal
-	 * @param a
-	 * @param b
-	 * @param dim
-	 * @throws IOException
-	 */
 	public SingleGameServer(ClientHandler a, ClientHandler b, int dim) throws IOException {
 		chs = new ClientHandler[2];
 		this.chs[0] = a;
