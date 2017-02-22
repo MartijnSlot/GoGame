@@ -1,4 +1,4 @@
-package com.nedap.university.go.gocommands.incomingCommandsToServer;
+package com.nedap.university.go.gocommands.clientToServer;
 
 import com.nedap.university.go.gocommands.Command;
 import com.nedap.university.go.server.ClientHandler;
@@ -30,7 +30,6 @@ public class GoCommand extends Command {
         }
     }
 
-    @Override
     protected void cannotExecute() {
         clientHandler.writeToClient("WARNING Cannot GO, you're already GOne, or you've already GO'd. ");
     }

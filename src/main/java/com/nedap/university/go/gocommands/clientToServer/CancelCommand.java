@@ -1,4 +1,4 @@
-package com.nedap.university.go.gocommands.incomingCommandsToServer;
+package com.nedap.university.go.gocommands.clientToServer;
 
 import com.nedap.university.go.gocommands.Command;
 import com.nedap.university.go.server.*;
@@ -21,7 +21,7 @@ public class CancelCommand extends Command {
         switch (clientHandler.getClientStatus()) {
             case WAITING:
                 if (splitMessage.length == 1) {
-                    clientHandler.handleCancelCommand(splitMessage);
+                    clientHandler.handleCancelCommand();
                 } else {
                     clientHandler.writeToClient("WARNING Wrong input. Status not changed, you are still waiting for a game. ");
                 }
@@ -32,8 +32,8 @@ public class CancelCommand extends Command {
         }
     }
 
-    @Override
-    public void cannotExecute() {
+
+    void cannotExecute() {
         clientHandler.writeToClient("WARNING Cannot CANCEL, you are not waiting for a game. ");
     }
 }

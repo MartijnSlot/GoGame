@@ -1,7 +1,7 @@
 package com.nedap.university.go.client;
 
 import com.nedap.university.go.controller.Game;
-import com.nedap.university.go.gocommands.DetermineCommand;
+import com.nedap.university.go.gocommands.*;
 import com.nedap.university.go.viewer.GoGUIIntegrator;
 
 import java.io.BufferedReader;
@@ -28,7 +28,7 @@ public class ServerHandler extends Thread {
     private Game game;
     private Socket socket;
     private GoGUIIntegrator gogui;
-    private boolean white;
+    private String color;
     private ClientStatus clientStatus;
 
 
@@ -40,6 +40,7 @@ public class ServerHandler extends Thread {
             inputFromServer = new BufferedReader(new InputStreamReader(client.getSocket().getInputStream()));
             outputToServer = new BufferedWriter(new OutputStreamWriter(client.getSocket().getOutputStream()));
         } catch (IOException ioe) {
+            ioe.getStackTrace();
 
         }
     }
@@ -49,8 +50,11 @@ public class ServerHandler extends Thread {
         try {
             while (socket.isConnected()) {
                 String fromServer = inputFromServer.readLine();
-                DetermineCommand.determineClientCommand(fromServer, this);
+                Command command = DetermineCommand.determineClientCommand(fromServer, this);
+                command.execute();
+
             }
+            client.shutdown();
         } catch (IOException e1) {
             System.out.println("No input");
         }
@@ -75,68 +79,70 @@ public class ServerHandler extends Thread {
 
     }
 
-    void shutdown() throws IOException {
-        outputToServer.close();
-        inputFromServer.close();
+    private void shutdown() {
+        try {
+            outputToServer.close();
+            inputFromServer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
     }
 
     /**
      * checks what to do when the initial splitMessage is given by the GoClient
      *
-     * @param player
-     * @param name
-     * @throws IOException
+     * @param splitMessage that contains the READY command
      */
-    void initName(String player, String name) throws IOException {
+    public void handleReady(String[] splitMessage) {
+        int boardSize = Integer.parseInt(splitMessage[3]);
+        color = splitMessage[1];
+        dim = boardSize;
+        game = new Game(boardSize);
+        clientStatus = (color.equals("white") ? ClientStatus.INGAME_NOT_TURN : ClientStatus.INGAME_TURN);
+        System.out.println("New game started on a board with dimension " + splitMessage[4] + " \nYour stone:" + splitMessage[1] + "\nYour opponent:" + splitMessage[2]);
     }
 
     /**
-     * checks what to do when the initial splitMessage is given by the GoClient
+     * checks the input of 'VALID' given by the server and acts on it locally
      *
-     * @param go
-     * @param boardSize
-     * @throws IOException
      */
-    void initGame(String go, String boardSize) throws IOException {
-
+    public void handleValid(String[] splitMessage) {
+// boolean white = (splitMessage[2] == "white");
+        int x = Integer.parseInt(splitMessage[2]);
+        int y = Integer.parseInt(splitMessage[3]);
+        game.doMove(x, y);
+        switchTurns();
     }
 
-    /**
-     * checks the input of 'MOVE' given by the GoClient and passes it on to the server
-     *
-     * @param stringX
-     * @param stringY
-     * @param move
-     * @throws IOException
-     */
-    void move(String move, String stringX, String stringY) throws IOException {
-
+    public void handleInvalid(String[] splitMessage) {
+        System.out.println("Game has ended due to INVALID move of player " + splitMessage[1] + "\n" + splitMessage[2]);
+        shutdown();
+        client.shutdown();
     }
 
-
-    void handleCancel(String message) {
+    public void handlePassed(String[] splitMessage) {
+        game.passMove();
+        System.out.println("Player " + splitMessage[1] + " has passed.");
+        switchTurns();
     }
 
-    /**
-     * adds a stone to the GUI, only the game is allowed to do this.
-     *
-     * @param x
-     * @param y
-     */
-    public void addToGUI(int x, int y) {
-        gogui.addStone(x, y, white);
+    public void handleEnd(String[] splitMessage) {
+        int scoreBlack = Integer.parseInt(splitMessage[1]);
+        int scoreWhite = Integer.parseInt(splitMessage[2]);
+        System.out.println("Game has ended. Score black: " + scoreBlack + "\nScore white: " + scoreWhite);
+        shutdown();
+        client.shutdown();
     }
 
-    /**
-     * removes a stone from the GUI, only the game is allowed to do this.
-     *
-     * @param x
-     * @param y
-     */
-    private void removeFromGUI(int x, int y) {
-        gogui.removeStone(x, y);
+    private void switchTurns() {
+        if (clientStatus == ClientStatus.INGAME_NOT_TURN) {
+            setClientStatus(ClientStatus.INGAME_TURN);
+            System.out.println("CHAT server - your turn, " + color + clientName);
+        } else {
+            setClientStatus(ClientStatus.INGAME_NOT_TURN);
+            System.out.println("CHAT server - NOT your turn, " + color + clientName);
+        }
     }
-
-
 
 }

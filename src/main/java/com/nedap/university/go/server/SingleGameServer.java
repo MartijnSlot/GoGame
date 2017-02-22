@@ -1,7 +1,6 @@
 package com.nedap.university.go.server;
 
 import com.nedap.university.go.controller.Game;
-import com.nedap.university.go.model.Stone;
 
 import java.io.IOException;
 
@@ -15,8 +14,6 @@ public class SingleGameServer {
 
 	private ClientHandler[] chs;
 	private Game game;
-	private int currentClient = 0;
-
 
 	/**
 	 * Constructor: starts a game with two clientHandlers and sends out the ready signal
@@ -31,14 +28,6 @@ public class SingleGameServer {
 		this.chs[1] = b;
 		game = new Game(dim);
 
-	}
-
-	/**
-	 * setter for the current client
-	 * @param a
-	 */
-	void setCurrentClient(int a) {
-		this.currentClient = a;
 	}
 
 	void startGame(ClientHandler a, ClientHandler b, int dim) {
@@ -64,11 +53,11 @@ public class SingleGameServer {
 	 */
 	void executeTurnMove(int x, int y, ClientHandler clientHandler) {
 	    if (game.moveAllowed(x, y)) {
-	        game.executeTurn(x, y);
-	        sendToPlayers("VALID " + clientHandler.getColor() + x + y);
+	        game.doMove(x, y);
+	        sendToPlayers("VALID " + clientHandler.getColor() + " " + x + " " + y);
 	        switchTurns(clientHandler);
 	    } else {
-            sendToPlayers("INVALID " + clientHandler.getColor() + x + y);
+            sendToPlayers("INVALID " + clientHandler.getColor() + " " + clientHandler.getClientName() + " has made illegal move. " + x + " " + y);
             clientHandler.annihilatePlayer();
 
         }
@@ -81,21 +70,22 @@ public class SingleGameServer {
 	 */
 	void executeTurnPass(ClientHandler clientHandler) {
         game.passMove();
-        if (!game.getDraw() || game.hasWinner()) {
+        sendToPlayers("PASSED " + clientHandler.getColor());
+        if (game.getDraw() || game.hasWinner()) {
             endGame();
         }
         switchTurns(clientHandler);
 	}
 
 
-	/**
+    /**
 	 * executes a 'tableflip' turn
 	 * writes the tableflip to opponent
 	 * finishes the game
 	 */
 	void executeTurnTableflip(ClientHandler clientHandler) {
 		game.tableflipMove(clientHandler.getColor());
-		sendToPlayers("CHAT server - " + clientHandler.getClientName() + " has flipped.\n");
+		sendToPlayers("CHAT server - " + clientHandler.getClientName() + " has totally flipped.\n");
 		sendToPlayers("END " + endGame());
 	}
 

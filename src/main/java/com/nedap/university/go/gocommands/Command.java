@@ -8,7 +8,6 @@ public abstract class Command {
     public String[] splitMessage;
 
     public abstract void execute();
-    protected abstract void cannotExecute();
 
 }
 

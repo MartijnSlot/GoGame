@@ -47,7 +47,7 @@ public class Game {
      * @param x
      * @param y
      */
-    public void executeTurn(int x, int y) {
+    public void doMove(int x, int y) {
         updateTUI();
         players[currentPlayer].makeMove(board, new Position(x, y));
         autoRemove(x, y);
@@ -55,6 +55,7 @@ public class Game {
         currentPlayer = otherPlayer;
         updateTUI();
     }
+
 
     /**
      * the 'pass' turn of a player on the board.
@@ -125,7 +126,7 @@ public class Game {
      * @param x
      * @param y
      */
-    private void autoRemove(int x, int y) {
+    public void autoRemove(int x, int y) {
         Set<Position> a = new HashSet<>();
         a.add(new Position(x - 1, y));
         a.add(new Position(x + 1, y));

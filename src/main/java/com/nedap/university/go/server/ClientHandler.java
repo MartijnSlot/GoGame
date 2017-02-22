@@ -56,7 +56,8 @@ public class ClientHandler extends Thread {
     public void run() {
         try {
             while (socket.isConnected()) {
-                Command command = DetermineCommand.determineServerCommand(inputFromClient.readLine(), this);
+                String fromClient = inputFromClient.readLine();
+                Command command = DetermineCommand.determineServerCommand(fromClient, this);
                 command.execute();
             }
         } catch (IOException e) {
@@ -77,7 +78,6 @@ public class ClientHandler extends Thread {
         this.color = color;
     }
 
-
     public ClientStatus getClientStatus() {
         return clientStatus;
     }
@@ -95,8 +95,7 @@ public class ClientHandler extends Thread {
      *
      * @throws IOException for socketclose
      */
-    public void annihilatePlayer()  {
-        writeToClient("CHAT You've been caught cheating, therefore you shall be annihilated!");
+    void annihilatePlayer()  {
         try {
             outputToClient.close();
             inputFromClient.close();
@@ -118,15 +117,6 @@ public class ClientHandler extends Thread {
         }
         temp = temp != null ? temp.trim() : null;
         return temp;
-    }
-
-    /**
-     * asks the client to play again
-     *
-     * @return boolean
-     */
-    private boolean playAgain() {
-        return true;
     }
 
     /**
@@ -165,7 +155,7 @@ public class ClientHandler extends Thread {
         writeToClient("CHAT server - Great success! You have entered your name: " + clientName);
     }
 
-    public void handleCancelCommand(String[] splitMessage) {
+    public void handleCancelCommand() {
         this.setClientStatus(ClientStatus.PREGAME);
         server.statusWaitingToInitial(this);
         writeToClient("CHAT server - Great success! You have set your status to PREGAME. Please enter GO boardsize, " + clientName);
@@ -231,6 +221,7 @@ public class ClientHandler extends Thread {
         result = 31 * result + (color != null ? color.hashCode() : 0);
         return result;
     }
+
 
 
 }

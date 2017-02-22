@@ -1,4 +1,4 @@
-package com.nedap.university.go.gocommands.incomingCommandsToClient;
+package com.nedap.university.go.gocommands.serverToClient;
 
 import com.nedap.university.go.client.ServerHandler;
 import com.nedap.university.go.gocommands.Command;
@@ -14,12 +14,6 @@ public class TableFlippedCommand extends Command {
 
     @Override
     public void execute() {
-
-    }
-
-    @Override
-    protected void cannotExecute() {
-
 
     }
 }

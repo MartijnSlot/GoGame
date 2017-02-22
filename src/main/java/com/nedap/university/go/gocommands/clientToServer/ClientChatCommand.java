@@ -1,4 +1,4 @@
-package com.nedap.university.go.gocommands.incomingCommandsToServer;
+package com.nedap.university.go.gocommands.clientToServer;
 
 import com.nedap.university.go.gocommands.Command;
 import com.nedap.university.go.server.ClientHandler;
@@ -6,13 +6,13 @@ import com.nedap.university.go.server.ClientHandler;
 /**
  * Created by martijn.slot on 21/02/2017.
  */
-public class ExitCommand extends Command {
+public class ClientChatCommand extends Command {
 
     private ClientHandler clientHandler;
 
-    public ExitCommand(String[] splitMessage, ClientHandler clientHandler) {
+    public ClientChatCommand(String[] command, ClientHandler clientHandler) {
         super();
-        this.splitMessage = splitMessage;
+        this.splitMessage = command;
         this.clientHandler = clientHandler;
     }
 
@@ -21,23 +21,20 @@ public class ExitCommand extends Command {
         switch (clientHandler.getClientStatus()) {
             case PREGAME:
             case WAITING:
+                clientHandler.chatToAll(splitMessage);
             case INGAME_NOT_TURN:
             case INGAME_TURN:
-                if (splitMessage.length == 1) {
-                    clientHandler.handleExitCommand(splitMessage);
-                } else {
-                    clientHandler.writeToClient("WARNING don't put any arguments after EXIT. ");
-                }
+                clientHandler.chatToOpponent(splitMessage);
                 break;
             default:
                 cannotExecute();
                 break;
         }
+
     }
 
-    @Override
     protected void cannotExecute() {
-        clientHandler.writeToClient("CHAT Exit cannot lead to this.");
+        clientHandler.writeToClient("WARNING Cannot CHAT, you've broken the program if you've reached this position. ");
     }
 
 }

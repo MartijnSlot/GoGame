@@ -108,11 +108,14 @@ public class GoClient extends Thread {
     /**
      * shuts down the client.
      *
-     * @throws IOException
      */
-    void shutdown() throws IOException {
-        inputFromPlayer.close();
-        socket.close();
+    void shutdown() {
+        try {
+            inputFromPlayer.close();
+            socket.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         System.exit(0);
     }
 

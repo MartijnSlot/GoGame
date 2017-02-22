@@ -1,4 +1,4 @@
-package com.nedap.university.go.gocommands.incomingCommandsToServer;
+package com.nedap.university.go.gocommands.clientToServer;
 
 import com.nedap.university.go.gocommands.Command;
 import com.nedap.university.go.server.ClientHandler;
@@ -33,7 +33,6 @@ public class MoveCommand extends Command {
         }
     }
 
-    @Override
     protected void cannotExecute() {
         clientHandler.writeToClient("WARNING Don't MOVE! Wait for your turn like the rest of us. ");
     }

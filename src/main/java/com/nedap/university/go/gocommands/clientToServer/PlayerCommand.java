@@ -1,4 +1,4 @@
-package com.nedap.university.go.gocommands.incomingCommandsToServer;
+package com.nedap.university.go.gocommands.clientToServer;
 
 import com.nedap.university.go.gocommands.Command;
 import com.nedap.university.go.server.ClientHandler;
@@ -31,7 +31,6 @@ public class PlayerCommand extends Command {
         }
     }
 
-    @Override
     protected void cannotExecute() {
         clientHandler.writeToClient("WARNING Cannot set name, please enter CANCEL first to cancel become a PREGAME-player again. Then you can enter PLAYER name. ");
     }
