@@ -167,7 +167,7 @@ public class ServerHandler extends Thread {
     }
 
     void checkAndSendPlayerMove(int x, int y) {
-        if (game.moveAllowed(x, y)) {
+        if (game != null && game.moveAllowed(x, y)) {
             writeToServer("MOVE " + x + " " + y);
         } else {
             System.out.println("Illegal move, do not send this move to the server. Try again.");

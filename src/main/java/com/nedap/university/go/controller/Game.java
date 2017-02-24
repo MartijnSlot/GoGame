@@ -46,7 +46,6 @@ public class Game {
      * @param y
      */
     public void doMove(int x, int y) {
-        updateTUI();
         players[currentPlayer].makeMove(board, new Position(x, y));
         autoRemove(x, y);
         writeHistory();
@@ -72,27 +71,18 @@ public class Game {
      * determines the winner according to the score. TODO Now only count stones
      */
 
-    public int[] getScores() {
-        int[] endScores = null;
-        for (int i = 0; i < players.length; i++) {
-            int temp = players[i].getScore();
-            endScores[i] = temp;
-        }
-        return endScores;
+    public String getScores() {
+        return board.getBlackScore() + " " + board.getWhiteScore();
     }
 
     private void determineWinner() {
-        if (board.countScore()[0] > board.countScore()[1]) {
-            for (int i = 0; i < numberPlayers; i++) {
-                if (players[i].getStone() == Stone.BLACK) players[i].isWinner();
-            }
+        if (board.getBlackScore() > board.getWhiteScore()) {
+            players[0].isWinner();
         }
-        if (board.countScore()[1] > board.countScore()[0]) {
-            for (int i = 0; i < numberPlayers; i++) {
-                if (players[i].getStone() == Stone.WHITE) players[i].isWinner();
-            }
+        if (board.getBlackScore() < board.getWhiteScore()) {
+            players[1].isWinner();
         }
-        if (board.countScore()[1] == board.countScore()[0]) {
+        if (board.getBlackScore() == board.getWhiteScore()) {
             draw = true;
         }
     }

@@ -33,7 +33,7 @@ public class TableFlipCommand extends Command {
         }
     }
 
-    protected void cannotExecute() {
+    private void cannotExecute() {
         clientHandler.writeToClient("WARNING Cannot tableflip. You must be in a game. ");
     }
 }

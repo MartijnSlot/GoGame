@@ -15,6 +15,8 @@ public class Board {
 
 	private int dim;
 	private Map<Position, Point> points = new HashMap<>();
+	private int blackScore = 0;
+	private int whiteScore = 0;
 
 	/**
 	 * constructor of board of size dim * dim, containing only EMPTY fields.
@@ -53,6 +55,14 @@ public class Board {
 
 	public void setPoint(Position pos, Stone s) {
 		points.put(pos, new Point(s));
+	}
+
+	public int getBlackScore() {
+		return blackScore;
+	}
+
+	public int getWhiteScore() {
+		return whiteScore;
 	}
 
 	/**
@@ -166,25 +176,16 @@ public class Board {
 	 * int[0] = score Stone.BLACK 
 	 * int[1] = score Stone.WHITE
 	 * territory count has been removed because it caused errors.
-	 * @return int[]
 	 */
-	public int[] countScore() {
-		int blackScore = 0;
-		int whiteScore = 0;
-		int[] scores = new int[2];
+	public void countScore() {
 		for (Position p : points.keySet()) {
 			if (points.get(p).getStone() == Stone.BLACK) blackScore += 1;
 			else if (points.get(p).getStone() == Stone.WHITE) whiteScore += 1;
-			else {
-//				Set<Position> a = freePositions(defendingCluster(p)); 
-				//TODO territory count
-			}
+//			else {
+////				Set<Position> a = freePositions(defendingCluster(p));
+//				//TODO territory count
+//			}
 		}
-
-		scores[0] = blackScore;
-		scores[1] = whiteScore;
-		return scores;
-		
 	}
 
 	/**

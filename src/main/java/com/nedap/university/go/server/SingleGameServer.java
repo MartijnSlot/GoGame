@@ -91,12 +91,7 @@ public class SingleGameServer {
 	 * @return String of endScores
 	 */
 	private String endGame() {
-		String endScores = null;
-		for (int i : game.getScores()) {
-			endScores = endScores + i + " ";
-		}
-		endScores = endScores.trim();
-		return endScores;
+		return game.getScores();
 	}
 
 

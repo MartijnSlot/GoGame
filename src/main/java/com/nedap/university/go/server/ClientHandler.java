@@ -52,7 +52,7 @@ public class ClientHandler extends Thread {
     }
 
     /**
-     * pre game run-function for clientStatuses PREGAME and WAITING
+     * pre run-function for client commands
      */
     @Override
     public void run() {
