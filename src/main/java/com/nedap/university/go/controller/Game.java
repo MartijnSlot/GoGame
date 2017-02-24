@@ -9,7 +9,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Class for maintaining a GO game.
+ * Class for maintaining a GO game. TODO player nubmering
  *
  * @author Martijn Slot
  * @version 1.0
@@ -20,7 +20,6 @@ public class Game {
     private Board board;
     public Player[] players;
     private int currentPlayer;
-    private int otherPlayer;
     private Set<String> history = new HashSet<>();
     private boolean draw = false;
 
@@ -30,7 +29,6 @@ public class Game {
         players[0] = new Player(Stone.BLACK);
         players[1] = new Player(Stone.WHITE);
         currentPlayer = 0;
-        otherPlayer = (currentPlayer + 1) % 2;
         draw = false;
     }
 
@@ -52,7 +50,7 @@ public class Game {
         players[currentPlayer].makeMove(board, new Position(x, y));
         autoRemove(x, y);
         writeHistory();
-        currentPlayer = otherPlayer;
+        currentPlayer = (currentPlayer + 1) % numberPlayers;
         updateTUI();
     }
 
@@ -63,8 +61,8 @@ public class Game {
      */
     public void passMove() {
         players[currentPlayer].passes();
-        currentPlayer = otherPlayer;
-        if (players[currentPlayer].getStone() == Stone.WHITE && players[otherPlayer].pass) {
+        currentPlayer = (currentPlayer + 1) % numberPlayers;
+        if (players[currentPlayer].getStone() == Stone.WHITE && players[(currentPlayer + 1) % numberPlayers].pass) {
             determineWinner();
         }
 

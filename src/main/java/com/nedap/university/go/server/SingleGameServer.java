@@ -1,6 +1,7 @@
 package com.nedap.university.go.server;
 
 import com.nedap.university.go.controller.Game;
+import com.nedap.university.go.gocommands.Protocol;
 
 import java.io.IOException;
 
@@ -11,6 +12,9 @@ import java.io.IOException;
  * @version 1.0
  */
 public class SingleGameServer {
+	private static final int BLACK = 0;
+	private static final int WHITE = 1;
+	private static final int NUMBER_OF_PLAYERS = 2;
 
 	private ClientHandler[] chs;
 	private Game game;
@@ -30,11 +34,11 @@ public class SingleGameServer {
 
         String opponentOf0 = playerNames[1];
         chs[0].setColor("black");
-        chs[0].writeToClient("READY black " + " " + opponentOf0 + " " + dim);
+        chs[0].writeToClient("READY" + Protocol.DELIMITER + "black" + Protocol.DELIMITER + opponentOf0 + Protocol.DELIMITER + dim);
 
         String opponentOf1 = playerNames[0];
         chs[1].setColor("white");
-        chs[0].writeToClient("READY white " + " " + opponentOf1 + " " + dim);
+        chs[1].writeToClient("READY" + Protocol.DELIMITER + "white" + Protocol.DELIMITER + opponentOf1 + Protocol.DELIMITER + dim);
     }
 
 	/**
@@ -110,10 +114,10 @@ public class SingleGameServer {
         clientHandler.setClientStatus(ClientStatus.INGAME_NOT_TURN);
 	    if (clientHandler.equals(chs[0])) {
             chs[1].setClientStatus(ClientStatus.INGAME_TURN);
-            chs[1].writeToClient("CHAT server - your turn, white");
+            chs[1].writeToClient("CHAT server - your turn, white, ");
         } else {
             chs[0].setClientStatus(ClientStatus.INGAME_TURN);
-            chs[0].writeToClient("CHAT server - your turn, black");
+            chs[0].writeToClient("CHAT server - your turn, black, ");
         }
     }
 }

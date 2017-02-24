@@ -13,11 +13,9 @@ import java.io.*;
 
 public class GoServer extends Thread {
 
-    Socket socket;
     private ServerSocket serverSocket;
-    private Map<ClientHandler, Integer> clientHandlerMap = new HashMap<>();
     private Map<Integer, List<ClientHandler>> pendingClients = new HashMap<>();
-    Set<ClientHandler> clientSet = new HashSet<>();
+    private Set<ClientHandler> clientSet = new HashSet<>();
     private int clientCounter = 0;
 
     public GoServer(int port) {
@@ -34,17 +32,17 @@ public class GoServer extends Thread {
     public void run() {
         System.out.println("Waiting for clients...");
 
-        while (true) {
+        while (!serverSocket.isClosed()) {
             try {
-                ClientHandler newClient = new ClientHandler(serverSocket.accept(), this);
-                clientCounter += 1;
-                if (clientCounter >= 500) {
+                if (clientCounter < 500) {
+                    ClientHandler clientHandler = new ClientHandler(serverSocket.accept(), this);
+                    clientSet.add(clientHandler);
+                    clientCounter += 1;
+                    System.out.println("Client Accepted! Client count: " + clientCounter);
+                    clientHandler.start();
+                } else {
                     System.out.println("Too many Clients!, restart server!");
-                    socket.close();
-                    break;
                 }
-                System.out.println("Client Accepted! Client count: " + clientCounter);
-                newClient.start();
             } catch (IOException e) {
                 System.out.println("Cannot accept client.");
             }
@@ -73,7 +71,6 @@ public class GoServer extends Thread {
     void addToWaitingList(ClientHandler client, int dim) {
         ArrayList<ClientHandler> clientHandlers = new ArrayList<>();
         clientHandlers.add(client);
-        clientHandlerMap.put(client, dim);
 
         if (pendingClients.containsKey(dim)) {
             pendingClients.get(dim).addAll(clientHandlers);
@@ -101,15 +98,15 @@ public class GoServer extends Thread {
 
         ch1.setClientStatus(ClientStatus.INGAME_TURN);
         ch2.setClientStatus(ClientStatus.INGAME_NOT_TURN);
-        SingleGameServer singleGameServer = null;
         try {
-            singleGameServer = new SingleGameServer(ch1, ch2, dimBoard);
+            SingleGameServer singleGameServer = new SingleGameServer(ch1, ch2, dimBoard);
             singleGameServer.startGame(ch1, ch2, dimBoard);
+            ch1.setSingleGameServer(singleGameServer);
+            ch2.setSingleGameServer(singleGameServer);
         } catch (IOException e) {
             e.printStackTrace();
         }
-        ch1.setSingleGameServer(singleGameServer);
-        ch2.setSingleGameServer(singleGameServer);
+
     }
 
     /**
@@ -120,7 +117,6 @@ public class GoServer extends Thread {
         try {
             clientCounter -= 1;
             System.out.println("Client removed! Client count: " + clientCounter);
-            clientHandlerMap.remove(clientHandler);
             pendingClients.get(clientHandler.getDim()).remove(clientHandler);
             clientSet.remove(clientHandler);
         } catch (NullPointerException npe) {

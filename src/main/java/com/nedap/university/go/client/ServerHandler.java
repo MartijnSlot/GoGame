@@ -49,6 +49,7 @@ public class ServerHandler extends Thread {
         try {
             while (socket.isConnected()) {
                 String fromServer = inputFromServer.readLine();
+                System.out.println(fromServer);
                 if (fromServer != null) {
                     DetermineCommand determineCommand = new DetermineCommand();
                     Command command = determineCommand.determineClientCommand(fromServer, this);
@@ -97,10 +98,10 @@ public class ServerHandler extends Thread {
     private void switchTurns() {
         if (clientStatus == ClientStatus.INGAME_NOT_TURN) {
             setClientStatus(ClientStatus.INGAME_TURN);
-            System.out.println("Your turn, " + color + clientName);
+            System.out.println("Your turn, " + color + " " + clientName);
         } else {
             setClientStatus(ClientStatus.INGAME_NOT_TURN);
-            System.out.println("NOT your turn, " + color + clientName);
+            System.out.println("NOT your turn, " + color + " " + clientName);
         }
     }
 
@@ -114,7 +115,7 @@ public class ServerHandler extends Thread {
         color = splitMessage[1];
         game = new Game(boardSize);
         clientStatus = (color.equals("white") ? ClientStatus.INGAME_NOT_TURN : ClientStatus.INGAME_TURN);
-        System.out.println("New game started on a board with dimension " + splitMessage[4] + " \nYour stone:" + splitMessage[1] + "\nYour opponent:" + splitMessage[2]);
+        System.out.println("New game started on a board with dimension " + splitMessage[3] + " \nYour stone:" + splitMessage[1] + "\nYour opponent:" + splitMessage[2]);
     }
 
     /**

@@ -22,6 +22,7 @@ public class ClientChatCommand extends Command {
             case PREGAME:
             case WAITING:
                 clientHandler.chatToAll(splitMessage);
+                break;
             case INGAME_NOT_TURN:
             case INGAME_TURN:
                 clientHandler.chatToOpponent(splitMessage);

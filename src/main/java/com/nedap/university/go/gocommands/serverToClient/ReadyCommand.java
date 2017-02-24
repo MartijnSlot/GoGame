@@ -11,7 +11,6 @@ public class ReadyCommand extends Command {
     private ServerHandler serverHandler;
 
     public ReadyCommand(String[] splitMessage, ServerHandler serverHandler) {
-
         super();
         this.splitMessage = splitMessage;
         this.serverHandler = serverHandler;

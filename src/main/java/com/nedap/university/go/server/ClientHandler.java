@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
+import java.util.UUID;
 
 /**
  * Class for creating a ClientHandler.
@@ -29,7 +30,7 @@ public class ClientHandler extends Thread {
     private int dim;
     private String clientName;
     private String color;
-
+    private String uuid = UUID.randomUUID().toString();
 
     /**
      * threaded clienthandler constructor
@@ -55,12 +56,16 @@ public class ClientHandler extends Thread {
      */
     @Override
     public void run() {
+
         try {
             while (socket != null && socket.isConnected()) {
                 String fromClient = inputFromClient.readLine();
+                if (fromClient != null) {
+                    System.out.println("uuid: " + this.uuid + "\nreceived: " + fromClient);
                     DetermineCommand determineCommand = new DetermineCommand();
                     Command command = determineCommand.determineServerCommand(fromClient, this);
                     command.execute();
+                }
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -150,7 +155,6 @@ public class ClientHandler extends Thread {
      */
     public void handlePlayerCommand(String[] splitMessage) {
         clientName = splitMessage[1];
-        server.clientSet.add(this);
         writeToClient("CHAT server - Great success! You have entered your name: " + clientName);
     }
 
@@ -162,7 +166,7 @@ public class ClientHandler extends Thread {
 
     public void chatToAll(String[] splitMessage) {
         String message = sewString(splitMessage);
-        server.chatToAllPlayers("CHAT via server " + clientName + ": " + message);
+        server.chatToAllPlayers("CHAT all via server " + clientName + ": " + message);
     }
 
     public void chatToOpponent(String[] splitMessage) {
@@ -193,7 +197,8 @@ public class ClientHandler extends Thread {
         int x = Integer.parseInt(splitMessage[1]);
         int y = Integer.parseInt(splitMessage[2]);
         singleGameServer.executeTurnMove(x, y, this);
-        writeToClient("CHAT server - Great success! You have set your moved a stone to " + x + "," + y + ". \nTurn finished, so don't try anything funny " + clientName);
+        writeToClient("CHAT server - Great success! You have set your moved a stone to " + x + "," + y);
+        writeToClient("CHAT Turn finished, so don't try anything funny " + clientName);
     }
 
     public void handlePassCommand(String[] splitMessage) {
@@ -208,18 +213,11 @@ public class ClientHandler extends Thread {
 
         ClientHandler that = (ClientHandler) o;
 
-        if (singleGameServer != null ? !singleGameServer.equals(that.singleGameServer) : that.singleGameServer != null)
-            return false;
-        return color != null ? color.equals(that.color) : that.color == null;
+        return uuid != null ? uuid.equals(that.uuid) : that.uuid == null;
     }
 
     @Override
     public int hashCode() {
-        int result = singleGameServer != null ? singleGameServer.hashCode() : 0;
-        result = 31 * result + (color != null ? color.hashCode() : 0);
-        return result;
+        return uuid != null ? uuid.hashCode() : 0;
     }
-
-
-
 }
