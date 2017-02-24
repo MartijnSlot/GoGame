@@ -49,8 +49,11 @@ public class ServerHandler extends Thread {
         try {
             while (socket.isConnected()) {
                 String fromServer = inputFromServer.readLine();
-                Command command = DetermineCommand.determineClientCommand(fromServer, this);
-                command.execute();
+                if (fromServer != null) {
+                    DetermineCommand determineCommand = new DetermineCommand();
+                    Command command = determineCommand.determineClientCommand(fromServer, this);
+                    command.execute();
+                }
 
             }
             client.shutdown();
@@ -67,7 +70,7 @@ public class ServerHandler extends Thread {
         this.clientName = clientName;
     }
 
-    private void writeToServer(String message) {
+    public void writeToServer(String message) {
         try {
             outputToServer.write(message);
             outputToServer.newLine();
@@ -131,6 +134,7 @@ public class ServerHandler extends Thread {
         shutdown();
         client.shutdown();
     }
+    //TODO ready & todo chat!
 
     public void handlePassed(String[] splitMessage) {
         game.passMove();

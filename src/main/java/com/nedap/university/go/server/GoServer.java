@@ -18,6 +18,7 @@ public class GoServer extends Thread {
     private Map<ClientHandler, Integer> clientHandlerMap = new HashMap<>();
     private Map<Integer, List<ClientHandler>> pendingClients = new HashMap<>();
     Set<ClientHandler> clientSet = new HashSet<>();
+    private int clientCounter = 0;
 
     public GoServer(int port) {
         System.out.println("Starting server on port " + port);
@@ -32,7 +33,6 @@ public class GoServer extends Thread {
     @Override
     public void run() {
         System.out.println("Waiting for clients...");
-        int clientCounter = 0;
 
         while (true) {
             try {
@@ -117,12 +117,9 @@ public class GoServer extends Thread {
      * @param clientHandler to remove
      */
     void eraseClient(ClientHandler clientHandler) {
-//        try {
-//            socket.close();
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
         try {
+            clientCounter -= 1;
+            System.out.println("Client removed! Client count: " + clientCounter);
             clientHandlerMap.remove(clientHandler);
             pendingClients.get(clientHandler.getDim()).remove(clientHandler);
             clientSet.remove(clientHandler);

@@ -37,7 +37,8 @@ public class GoClient extends Thread {
         while(inputFromPlayer != null) {
             try {
                 String fromPlayer = inputFromPlayer.readLine();
-                Command command = DetermineCommand.inputCommand(fromPlayer, this);
+                DetermineCommand determineCommand = new DetermineCommand();
+                Command command = determineCommand.inputCommand(fromPlayer, this);
                 command.execute();
             } catch (IOException e) {
                 e.printStackTrace();

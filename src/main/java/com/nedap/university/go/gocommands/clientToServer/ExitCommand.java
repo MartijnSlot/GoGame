@@ -24,7 +24,7 @@ public class ExitCommand extends Command {
             case INGAME_NOT_TURN:
             case INGAME_TURN:
                 if (splitMessage.length == 1) {
-                    clientHandler.handleExitCommand(splitMessage);
+                    clientHandler.handleExitCommand();
                 } else {
                     clientHandler.writeToClient("WARNING don't put any arguments after EXIT. ");
                 }

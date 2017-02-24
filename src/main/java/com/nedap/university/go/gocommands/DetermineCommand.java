@@ -13,12 +13,16 @@ import com.nedap.university.go.gocommands.serverToClient.*;
  */
 public class DetermineCommand implements Protocol {
 
+    public DetermineCommand() {
+
+    }
+
     /**
      * When the client gets one of these commands, this method determines what to do next
      * @param message
      * @param serverHandler
      */
-    public static Command determineClientCommand(String message, ServerHandler serverHandler) {
+    public Command determineClientCommand(String message, ServerHandler serverHandler) {
         String[] splitMessage = message.split(DELIMITER);
         Command command;
         switch (splitMessage[0]) {
@@ -47,7 +51,7 @@ public class DetermineCommand implements Protocol {
                 command = new EndCommand(splitMessage, serverHandler);
                 break;
             default:
-                command = new CrappyCommand(splitMessage);
+                command = new ServerCrappyCommand(splitMessage);
                 break;
         }
         return command;
@@ -58,7 +62,7 @@ public class DetermineCommand implements Protocol {
      * @param message
      * @param clientHandler
      */
-    public static Command determineServerCommand(String message, ClientHandler clientHandler) {
+    public Command determineServerCommand(String message, ClientHandler clientHandler) {
         String[] splitMessage = message.split(DELIMITER);
         Command command;
         switch (splitMessage[0]) {
@@ -87,13 +91,13 @@ public class DetermineCommand implements Protocol {
                 command = new GoCommand(splitMessage, clientHandler);
                 break;
             default:
-                command = new CrappyCommand(splitMessage);
+                command = new ClientCrappyCommand(splitMessage, clientHandler);
                 break;
         }
         return command;
     }
 
-    public static Command inputCommand(String message, GoClient goClient) {
+    public Command inputCommand(String message, GoClient goClient) {
         String[] splitMessage = message.split(DELIMITER);
         Command command;
         switch (splitMessage[0]) {

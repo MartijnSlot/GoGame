@@ -30,6 +30,7 @@ public class ClientHandler extends Thread {
     private String clientName;
     private String color;
 
+
     /**
      * threaded clienthandler constructor
      *
@@ -55,14 +56,16 @@ public class ClientHandler extends Thread {
     @Override
     public void run() {
         try {
-            while (socket.isConnected()) {
+            while (socket != null && socket.isConnected()) {
                 String fromClient = inputFromClient.readLine();
-                Command command = DetermineCommand.determineServerCommand(fromClient, this);
-                command.execute();
+                    DetermineCommand determineCommand = new DetermineCommand();
+                    Command command = determineCommand.determineServerCommand(fromClient, this);
+                    command.execute();
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
+        annihilatePlayer();
     }
 
     void setClientStatus(ClientStatus clientStatus) {
@@ -99,6 +102,7 @@ public class ClientHandler extends Thread {
         try {
             outputToClient.close();
             inputFromClient.close();
+            socket.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -158,12 +162,16 @@ public class ClientHandler extends Thread {
 
     public void chatToAll(String[] splitMessage) {
         String message = sewString(splitMessage);
-        server.chatToAllPlayers(message);
+        server.chatToAllPlayers("CHAT via server " + clientName + ": " + message);
     }
 
     public void chatToOpponent(String[] splitMessage) {
         String message = sewString(splitMessage);
-        singleGameServer.sendToPlayers(message);
+        if (clientStatus == ClientStatus.PREGAME || clientStatus == ClientStatus.WAITING) {
+            server.chatToAllPlayers("CHAT via server " + clientName + ": " + message);
+        } else {
+            singleGameServer.sendToPlayers("CHAT via server " + clientName + ": " + message);
+        }
     }
 
 
@@ -177,7 +185,7 @@ public class ClientHandler extends Thread {
         singleGameServer.executeTurnTableflip(this);
     }
 
-    public void handleExitCommand(String[] splitMessage) {
+    public void handleExitCommand() {
         server.eraseClient(this);
     }
 
