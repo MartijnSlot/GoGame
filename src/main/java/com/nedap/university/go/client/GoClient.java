@@ -1,7 +1,7 @@
 package com.nedap.university.go.client;
 
-import com.nedap.university.go.model.Stone;
-import com.nedap.university.go.viewer.GoGUIIntegrator;
+import com.nedap.university.go.gocommands.Command;
+import com.nedap.university.go.gocommands.DetermineCommand;
 
 import java.io.*;
 import java.net.*;
@@ -36,7 +36,9 @@ public class GoClient extends Thread {
         serverHandler.start();
         while(inputFromPlayer != null) {
             try {
-                this.handleInput();
+                String fromPlayer = inputFromPlayer.readLine();
+                Command command = DetermineCommand.inputCommand(fromPlayer, this);
+                command.execute();
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -47,63 +49,24 @@ public class GoClient extends Thread {
         return socket;
     }
 
-    /**
-     * handles the input from the server.
-     *
-     * @throws IOException
-     */
-    private void handleInput() throws IOException {
-
+    public void handleMoveFromPlayer(int x, int y) {
+        serverHandler.checkAndSendPlayerMove(x, y);
     }
 
-    /**
-     * checks whether a string input can be parsed to Integer
-     *
-     * @param input
-     * @return boolean
-     */
-    private boolean isParsable(String input) {
-        try {
-            Integer.parseInt(input);
-        } catch (NumberFormatException e) {
-            return false;
-        }
-        return true;
+    public void handleAnythingFromPlayerExceptMove(String[] splitMessage) {
+        serverHandler.sendPlayerCommand(splitMessage);
     }
 
-    /**
-     * checks whether the inputname is correct
-     *
-     * @param name
-     * @return boolean
-     */
-    private boolean checkName(String name) {
-        if (name.length() > 20 | name.matches(".*\\W+.*")) {
-            System.out.println("Illegal input " + name +
-                    ", name requirements: \n- name < 20 characters \n- name may only consist out of digits and letters");
-            return false;
-        }
-        return true;
+    public void handleExitFromPlayer(String[] splitMessage) {
+        serverHandler.sendPlayerCommand(splitMessage);
+        shutdown();
     }
 
-    /**
-     * checks whether the given dimension is parsable and correct
-     *
-     * @param input
-     * @return boolean
-     */
-    private boolean checkDim(String input) {
-        int parsedInput;
-        if (!isParsable(input)) {
-            return false;
-        } else {
-            parsedInput = Integer.parseInt(input);
-            if (parsedInput % 2 == 0 || parsedInput < 5 || parsedInput > 131) {
-                return false;
-            }
-        }
-        return true;
+    public void handlePlayerCommandFromPlayer(String[] splitMessage) {
+        serverHandler.sendPlayerCommand(splitMessage);
+        serverHandler.setClientName(splitMessage[1]);
     }
+
 
     /**
      * shuts down the client.
@@ -118,6 +81,5 @@ public class GoClient extends Thread {
         }
         System.exit(0);
     }
-
 }
 

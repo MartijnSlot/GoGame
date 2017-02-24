@@ -14,8 +14,6 @@ public class CrappyCommand extends Command {
 
     }
 
-    @Override
     protected void cannotExecute() {
-        return null;
     }
 }

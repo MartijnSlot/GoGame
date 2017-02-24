@@ -24,7 +24,6 @@ public class ServerHandler extends Thread {
     private BufferedReader inputFromServer;
     private BufferedWriter outputToServer;
     private String clientName;
-    private Integer dim;
     private Game game;
     private Socket socket;
     private GoGUIIntegrator gogui;
@@ -60,23 +59,22 @@ public class ServerHandler extends Thread {
         }
     }
 
-    void setClientStatus(ClientStatus clientStatus) {
+    private void setClientStatus(ClientStatus clientStatus) {
         this.clientStatus = clientStatus;
     }
 
-    ClientStatus getClientStatus() {
-        return clientStatus;
+    void setClientName(String clientName) {
+        this.clientName = clientName;
     }
 
-    String getClientName() {
-        return clientName;
-    }
-
-    void writeToServer(String message) throws IOException {
-        outputToServer.write(message);
-        outputToServer.newLine();
-        outputToServer.flush();
-
+    private void writeToServer(String message) {
+        try {
+            outputToServer.write(message);
+            outputToServer.newLine();
+            outputToServer.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private void shutdown() {
@@ -89,22 +87,17 @@ public class ServerHandler extends Thread {
     }
 
     private String sewString(String[] splitMessage) {
-        String temp = null;
-        for (String messageItem : splitMessage) {
-            temp = temp + messageItem + Protocol.DELIMITER;
-        }
-        temp = temp != null ? temp.trim() : null;
-        return temp;
+        return String.join(Protocol.DELIMITER, splitMessage);
     }
 
 
     private void switchTurns() {
         if (clientStatus == ClientStatus.INGAME_NOT_TURN) {
             setClientStatus(ClientStatus.INGAME_TURN);
-            System.out.println("CHAT server - your turn, " + color + clientName);
+            System.out.println("Your turn, " + color + clientName);
         } else {
             setClientStatus(ClientStatus.INGAME_NOT_TURN);
-            System.out.println("CHAT server - NOT your turn, " + color + clientName);
+            System.out.println("NOT your turn, " + color + clientName);
         }
     }
 
@@ -116,7 +109,6 @@ public class ServerHandler extends Thread {
     public void handleReady(String[] splitMessage) {
         int boardSize = Integer.parseInt(splitMessage[3]);
         color = splitMessage[1];
-        dim = boardSize;
         game = new Game(boardSize);
         clientStatus = (color.equals("white") ? ClientStatus.INGAME_NOT_TURN : ClientStatus.INGAME_TURN);
         System.out.println("New game started on a board with dimension " + splitMessage[4] + " \nYour stone:" + splitMessage[1] + "\nYour opponent:" + splitMessage[2]);
@@ -168,4 +160,18 @@ public class ServerHandler extends Thread {
         String chat = sewString(splitMessage);
         System.out.println(chat);
     }
+
+    void checkAndSendPlayerMove(int x, int y) {
+        if (game.moveAllowed(x, y)) {
+            writeToServer("MOVE " + x + " " + y);
+        } else {
+            System.out.println("Illegal move, do not send this move to the server. Try again.");
+        }
+    }
+
+    void sendPlayerCommand(String[] splitMessage) {
+        String commandToSend = sewString(splitMessage);
+        writeToServer(commandToSend);
+    }
+
 }

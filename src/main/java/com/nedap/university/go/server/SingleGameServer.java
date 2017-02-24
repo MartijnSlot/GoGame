@@ -30,11 +30,11 @@ public class SingleGameServer {
 
         String opponentOf0 = playerNames[1];
         chs[0].setColor("black");
-        chs[0].writeToClient("READY black " + opponentOf0 + dim);
+        chs[0].writeToClient("READY black " + " " + opponentOf0 + " " + dim);
 
         String opponentOf1 = playerNames[0];
         chs[1].setColor("white");
-        chs[0].writeToClient("READY white " + opponentOf1 + dim);
+        chs[0].writeToClient("READY white " + " " + opponentOf1 + " " + dim);
     }
 
 	/**

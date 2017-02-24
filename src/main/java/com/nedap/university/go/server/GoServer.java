@@ -15,8 +15,8 @@ public class GoServer extends Thread {
 
     Socket socket;
     private ServerSocket serverSocket;
-    Map<ClientHandler, Integer> clientHandlerMap = new HashMap<>();
-    Map<Integer, List<ClientHandler>> pendingClients = new HashMap<>();
+    private Map<ClientHandler, Integer> clientHandlerMap = new HashMap<>();
+    private Map<Integer, List<ClientHandler>> pendingClients = new HashMap<>();
     Set<ClientHandler> clientSet = new HashSet<>();
 
     public GoServer(int port) {
@@ -117,13 +117,17 @@ public class GoServer extends Thread {
      * @param clientHandler to remove
      */
     void eraseClient(ClientHandler clientHandler) {
+//        try {
+//            socket.close();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
         try {
             clientHandlerMap.remove(clientHandler);
             pendingClients.get(clientHandler.getDim()).remove(clientHandler);
             clientSet.remove(clientHandler);
-            socket.close();
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (NullPointerException npe) {
+            System.out.println("Client " + clientHandler.getClientName() + " erased.");
         }
     }
 

@@ -1,6 +1,8 @@
 package com.nedap.university.go.gocommands;
 
+import com.nedap.university.go.client.GoClient;
 import com.nedap.university.go.client.ServerHandler;
+import com.nedap.university.go.gocommands.playerInput.*;
 import com.nedap.university.go.server.ClientHandler;
 import com.nedap.university.go.gocommands.clientToServer.*;
 import com.nedap.university.go.gocommands.serverToClient.*;
@@ -86,6 +88,26 @@ public class DetermineCommand implements Protocol {
                 break;
             default:
                 command = new CrappyCommand(splitMessage);
+                break;
+        }
+        return command;
+    }
+
+    public static Command inputCommand(String message, GoClient goClient) {
+        String[] splitMessage = message.split(DELIMITER);
+        Command command;
+        switch (splitMessage[0]) {
+            case MOVE:
+                command = new InputMove(splitMessage, goClient);
+                break;
+            case EXIT:
+                command = new InputExit(splitMessage, goClient);
+                break;
+            case PLAYER:
+                command = new InputPlayer(splitMessage, goClient);
+                break;
+            default:
+                command = new InputOtherCommands(splitMessage, goClient);
                 break;
         }
         return command;

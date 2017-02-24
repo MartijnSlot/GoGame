@@ -111,12 +111,7 @@ public class ClientHandler extends Thread {
      * @return string
      */
     private String sewString(String[] splitMessage) {
-        String temp = null;
-        for (String messageItem : splitMessage) {
-            temp = temp + messageItem + Protocol.DELIMITER;
-        }
-        temp = temp != null ? temp.trim() : null;
-        return temp;
+        return String.join(Protocol.DELIMITER, splitMessage);
     }
 
     /**
@@ -184,11 +179,6 @@ public class ClientHandler extends Thread {
 
     public void handleExitCommand(String[] splitMessage) {
         server.eraseClient(this);
-        try {
-            socket.close();
-        } catch (IOException e) {
-            System.out.println("Client removed, socket cannot be closed again.");
-        }
     }
 
     public void handleMoveCommand(String[] splitMessage) {
