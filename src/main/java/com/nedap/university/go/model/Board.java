@@ -1,3 +1,8 @@
+
+
+
+
+
 package com.nedap.university.go.model;
 
 import java.util.HashMap;
@@ -31,11 +36,11 @@ public class Board {
 			}
 		}
 	}
-	
+
 	public int getDim() {
 		return dim;
 	}
-	
+
 	public Map<Position, Point> getPoints() {
 		return points;
 	}
@@ -90,7 +95,7 @@ public class Board {
 			if (isPoint(a))	neighbours.add(a);
 		}
 		return neighbours;
-	} 
+	}
 
 
 	/**
@@ -98,16 +103,18 @@ public class Board {
 	 * @param cluster
 	 * @return set
 	 */
-	private Set<Position> freePositions(Set<Position> cluster) {
+	private Set<Position> encapsulatedBy(Set<Position> cluster, Stone stone) {
 		Set<Position> freePositions = new HashSet<>();
 
 		for(Position clusterPos : cluster){
 			for (Position p : getNeighbours(clusterPos)) {
-				if (getPoint(p).getStone() == Stone.EMPTY) freePositions.add(p);
+				if (getPoint(p).getStone() == stone) {
+					freePositions.add(p);
+				}
 			}
 		}
 		return freePositions;
-	} 
+	}
 
 	/**
 	 * Returns a cluster of defending stone positions in which position pos is situated.
@@ -140,8 +147,8 @@ public class Board {
 	 * @param pos
 	 * @return set
 	 */
-	private Set<Position> libertyPositions(Position pos) {
-		return freePositions(defendingCluster(pos));
+	private Set<Position> surroundingStones(Position pos, Stone stone) {
+		return encapsulatedBy(defendingCluster(pos), stone);
 	}
 
 	/**
@@ -150,7 +157,7 @@ public class Board {
 	 * @return int
 	 */
 	public int numberOfLiberties(Position pos) {
-		return libertyPositions(pos).size();
+		return surroundingStones(pos, Stone.EMPTY).size();
 	}
 
 
@@ -169,23 +176,44 @@ public class Board {
 		System.out.println("Move not allowed: position does not exist on this playing board, or the position is not Empty.");
 		return false;
 	}
-	
-	
+
+
 	/**
-	 * counts the endscore on the board. 
-	 * int[0] = score Stone.BLACK 
+	 * counts the endscore on the board.
+	 * int[0] = score Stone.BLACK
 	 * int[1] = score Stone.WHITE
 	 * territory count has been removed because it caused errors.
 	 */
 	public void countScore() {
+		Set<Position> whiteTerritory = new HashSet<>();
+		Set<Position> blackTerritory = new HashSet<>();
+
 		for (Position p : points.keySet()) {
-			if (points.get(p).getStone() == Stone.BLACK) blackScore += 1;
-			else if (points.get(p).getStone() == Stone.WHITE) whiteScore += 1;
-//			else {
-////				Set<Position> a = freePositions(defendingCluster(p));
-//				//TODO territory count
-//			}
+			switch (points.get(p).getStone()) {
+				case EMPTY:
+
+					int blackEnc = encapsulatedBy(defendingCluster(p), Stone.BLACK).size();
+					int whiteEnc = encapsulatedBy(defendingCluster(p), Stone.WHITE).size();
+
+					if(blackEnc > 0 && whiteEnc == 0) {
+						blackTerritory.add(p);
+					}
+
+					if(whiteEnc > 0 && blackEnc == 0) {
+						whiteTerritory.add(p);
+					}
+					break;
+				case BLACK:
+					blackTerritory.add(p);
+					break;
+				case WHITE:
+					whiteTerritory.add(p);
+					break;
+			}
 		}
+
+		blackScore = blackTerritory.size();
+		whiteScore = whiteTerritory.size();
 	}
 
 	/**
@@ -196,11 +224,11 @@ public class Board {
 		String boardString = "";
 		for (int i = 0; i < dim; i++) {
 			for (int j = 0; j < dim; j++)
-                boardString = boardString + getPoint(new Position(i, j)).getStone().toTUIString();
+				boardString = boardString + getPoint(new Position(i, j)).getStone().toTUIString();
 		}
 		return boardString;
 	}
-	
+
 	/**
 	 * Prints a GTUI
 	 * @return String

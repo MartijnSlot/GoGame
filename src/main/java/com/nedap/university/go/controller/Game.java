@@ -67,6 +67,10 @@ public class Game {
 
     }
 
+    public void countScore(){
+        board.countScore();
+    }
+
     /**
      * determines the winner according to the score. TODO Now only count stones
      */

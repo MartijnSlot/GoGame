@@ -1,5 +1,7 @@
 package com.nedap.university.go.gocommands;
 
+import com.nedap.university.go.aiStrategies.Strategy;
+
 /**
  * Created by martijn.slot on 21/02/2017.
  */
@@ -11,6 +13,13 @@ public interface Protocol {
      * message from the server to the client that the color client surrendered
      */
     String TABLEFLIPPED = "TABLEFLIPPED";
+
+    /**
+     * SCORE
+     *
+     * message from client to server requesting score
+     */
+    String SCORE = "SCORE";
 
     /**
      * PASSED color

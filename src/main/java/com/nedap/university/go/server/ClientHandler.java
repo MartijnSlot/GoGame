@@ -220,4 +220,8 @@ public class ClientHandler extends Thread {
     public int hashCode() {
         return uuid != null ? uuid.hashCode() : 0;
     }
+
+    public void handleScoreCommand() {
+        writeToClient(singleGameServer.executeScore());
+    }
 }

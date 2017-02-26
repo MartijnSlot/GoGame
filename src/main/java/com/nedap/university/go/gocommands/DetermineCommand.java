@@ -90,6 +90,9 @@ public class DetermineCommand implements Protocol {
             case GO:
                 command = new GoCommand(splitMessage, clientHandler);
                 break;
+            case SCORE:
+                command = new ScoreCommand(splitMessage, clientHandler);
+                break;
             default:
                 command = new ClientCrappyCommand(splitMessage, clientHandler);
                 break;

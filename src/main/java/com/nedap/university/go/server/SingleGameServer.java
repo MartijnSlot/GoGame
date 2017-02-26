@@ -115,4 +115,9 @@ public class SingleGameServer {
             chs[0].writeToClient("CHAT server - your turn, black, ");
         }
     }
+
+    public String executeScore() {
+		game.countScore();
+		return game.getScores();
+    }
 }
