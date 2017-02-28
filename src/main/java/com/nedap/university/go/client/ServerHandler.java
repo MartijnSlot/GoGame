@@ -79,8 +79,8 @@ public class ServerHandler extends Thread {
             outputToServer.newLine();
             outputToServer.flush();
         } catch (IOException e) {
-            System.out.println("END scores black:white ::: " + game.getScores());
             System.out.println("You played on a crappy server. Server has died, disconnection just happened.");
+            shutdown();
         }
     }
 
@@ -88,6 +88,7 @@ public class ServerHandler extends Thread {
         try {
             outputToServer.close();
             inputFromServer.close();
+            Platform.exit();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -148,7 +149,7 @@ public class ServerHandler extends Thread {
         setClientStatus(ClientStatus.PREGAME);
         System.out.println("ClientStatus: " + ClientStatus.PREGAME + " Please enter your GO dim.");
         game.reset();
-        gogui.stopGUI();
+        gogui.clearBoard();
     }
 
     public void handlePassed(String[] splitMessage) {
@@ -179,7 +180,7 @@ public class ServerHandler extends Thread {
         System.out.println(chat);
         setClientStatus(ClientStatus.PREGAME);
         game.reset();
-        gogui.stopGUI();
+        gogui.clearBoard();
     }
 
     public void handleWarning(String[] splitMessage) {

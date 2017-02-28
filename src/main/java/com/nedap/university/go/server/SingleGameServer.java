@@ -2,7 +2,6 @@ package com.nedap.university.go.server;
 
 import com.nedap.university.go.controller.Game;
 import com.nedap.university.go.gocommands.Protocol;
-import com.nedap.university.go.model.Stone;
 
 import java.io.IOException;
 
@@ -21,25 +20,25 @@ public class SingleGameServer {
 	private Game game;
 
 	public SingleGameServer(ClientHandler a, ClientHandler b, int dim) throws IOException {
-		chs = new ClientHandler[2];
-		this.chs[0] = a;
-		this.chs[1] = b;
+		chs = new ClientHandler[NUMBER_OF_PLAYERS];
+		this.chs[BLACK] = a;
+		this.chs[WHITE] = b;
 		game = new Game(dim);
 
 	}
 
 	void startGame(ClientHandler a, ClientHandler b, int dim) {
-		String playerNames[] = new String[2];
-		playerNames[0] = a.getClientName();
-		playerNames[1] = b.getClientName();
+		String playerNames[] = new String[NUMBER_OF_PLAYERS];
+		playerNames[BLACK] = a.getClientName();
+		playerNames[WHITE] = b.getClientName();
 
-		String opponentOf0 = playerNames[1];
-		chs[0].setColor("black");
-		chs[0].writeToClient("READY" + Protocol.DELIMITER + "black" + Protocol.DELIMITER + opponentOf0 + Protocol.DELIMITER + dim);
+		String opponentOfBLACK = playerNames[WHITE];
+		chs[BLACK].setColor("black");
+		chs[BLACK].writeToClient("READY" + Protocol.DELIMITER + "black" + Protocol.DELIMITER + opponentOfBLACK + Protocol.DELIMITER + dim);
 
-		String opponentOf1 = playerNames[0];
-		chs[1].setColor("white");
-		chs[1].writeToClient("READY" + Protocol.DELIMITER + "white" + Protocol.DELIMITER + opponentOf1 + Protocol.DELIMITER + dim);
+		String opponentOfWHITE = playerNames[BLACK];
+		chs[WHITE].setColor("white");
+		chs[WHITE].writeToClient("READY" + Protocol.DELIMITER + "white" + Protocol.DELIMITER + opponentOfWHITE + Protocol.DELIMITER + dim);
 
 		sendToPlayers("CHAT server - Let's make GO great again!");
 	}
@@ -74,22 +73,22 @@ public class SingleGameServer {
 		if (game.getWinner() != null) {
 			switch (game.getWinner()) {
 				case "white":
-					sendToPlayers("CHAT server - white wins. Kudos, " + chs[1].getClientName());
+					sendToPlayers("CHAT server - white wins. Kudos, " + chs[WHITE].getClientName());
 					sendToPlayers("END " + endGame());
-					chs[0].setClientStatus(ClientStatus.PREGAME);
-                    chs[1].setClientStatus(ClientStatus.PREGAME);
+					chs[BLACK].setClientStatus(ClientStatus.PREGAME);
+                    chs[WHITE].setClientStatus(ClientStatus.PREGAME);
                     break;
 				case "black":
-					sendToPlayers("CHAT server - black wins. Kudos, " + chs[0].getClientName());
+					sendToPlayers("CHAT server - black wins. Kudos, " + chs[BLACK].getClientName());
 					sendToPlayers("END " + endGame());
-                    chs[0].setClientStatus(ClientStatus.PREGAME);
-                    chs[1].setClientStatus(ClientStatus.PREGAME);
+                    chs[BLACK].setClientStatus(ClientStatus.PREGAME);
+                    chs[WHITE].setClientStatus(ClientStatus.PREGAME);
 					break;
 				case "draw":
 					sendToPlayers("CHAT server - Its a draw, you seem to be evenly matched.");
 					sendToPlayers("END " + endGame());
-                    chs[0].setClientStatus(ClientStatus.PREGAME);
-                    chs[1].setClientStatus(ClientStatus.PREGAME);
+                    chs[BLACK].setClientStatus(ClientStatus.PREGAME);
+                    chs[WHITE].setClientStatus(ClientStatus.PREGAME);
 					break;
 				default:
 					sendToPlayers("CHAT server - Hier mag ie niet komen na het passen.");
@@ -110,6 +109,8 @@ public class SingleGameServer {
 		game.tableflipMove(clientHandler.getColor());
 		sendToPlayers("CHAT server - " + clientHandler.getClientName() + " has totally flipped.\n");
 		sendToPlayers("END " + endGame());
+        chs[BLACK].setClientStatus(ClientStatus.PREGAME);
+        chs[WHITE].setClientStatus(ClientStatus.PREGAME);
 	}
 
 	/**
@@ -133,16 +134,16 @@ public class SingleGameServer {
 
 	private void switchTurns(ClientHandler clientHandler) {
 		clientHandler.setClientStatus(ClientStatus.INGAME_NOT_TURN);
-		if (clientHandler.equals(chs[0])) {
-			chs[1].setClientStatus(ClientStatus.INGAME_TURN);
-			chs[1].writeToClient("CHAT server - your turn, white, ");
+		if (clientHandler.equals(chs[BLACK])) {
+			chs[WHITE].setClientStatus(ClientStatus.INGAME_TURN);
+			chs[WHITE].writeToClient("CHAT server - your turn, white. ");
 		} else {
-			chs[0].setClientStatus(ClientStatus.INGAME_TURN);
-			chs[0].writeToClient("CHAT server - your turn, black, ");
+			chs[BLACK].setClientStatus(ClientStatus.INGAME_TURN);
+			chs[BLACK].writeToClient("CHAT server - your turn, black. ");
 		}
 	}
 
-	public String executeScore() {
+	String executeScore() {
 		game.countScore();
 		return game.getScores();
 	}
