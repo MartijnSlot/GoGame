@@ -21,8 +21,8 @@ public class Game {
     private Player[] players;
     private int currentPlayer;
     private Set<String> history = new HashSet<>();
-    private boolean draw = false;
     public Set<Position> autoRemoveSet = new HashSet<>();
+    private String winner = null;
 
     public Game(int dim) {
         board = new Board(dim);
@@ -30,7 +30,6 @@ public class Game {
         players[0] = new Player(Stone.BLACK);
         players[1] = new Player(Stone.WHITE);
         currentPlayer = 0;
-        draw = false;
     }
 
     public Board getBoard() {
@@ -51,6 +50,7 @@ public class Game {
         autoRemove(x, y);
         writeHistory();
         currentPlayer = (currentPlayer + 1) % numberPlayers;
+        updateTUI();
     }
 
 
@@ -60,12 +60,13 @@ public class Game {
      */
     public void passMove() {
         players[currentPlayer].passes();
-        currentPlayer = (currentPlayer + 1) % numberPlayers;
-        if (players[currentPlayer].getStone() == Stone.WHITE && players[(currentPlayer + 1) % numberPlayers].pass) {
+        if (players[currentPlayer].getStone() == Stone.WHITE && players[(currentPlayer + 1) % numberPlayers].getPass()) {
+            countScore();
             determineWinner();
+            }
+        currentPlayer = (currentPlayer + 1) % numberPlayers;
         }
-
-    }
+    
 
     public void countScore(){
         board.countScore();
@@ -82,12 +83,14 @@ public class Game {
     private void determineWinner() {
         if (board.getBlackScore() > board.getWhiteScore()) {
             players[0].isWinner();
+            winner = "black";
         }
         if (board.getBlackScore() < board.getWhiteScore()) {
             players[1].isWinner();
+            winner = "white";
         }
         if (board.getBlackScore() == board.getWhiteScore()) {
-            draw = true;
+            winner = "draw";
         }
     }
 
@@ -165,6 +168,7 @@ public class Game {
     public boolean inKo(int x, int y) {
         boolean inKo = false;
         this.players[currentPlayer].makeMove(this.board, new Position(x, y));
+        autoRemove(x, y);
         for (String b : history) {
             if (this.board.toSimpleString().equals(b)) {
                 board.removePoint(new Position(x, y));
@@ -176,22 +180,13 @@ public class Game {
     }
 
     /**
-     * checks if the game has a winner
-     *
-     * @return boolean
-     */
-    public boolean hasWinner() {
-        return (players[0].winner | players[1].winner && !draw);
-    }
-
-    /**
      * Update the state of the board to the console!
      */
     public void updateTUI() {
         System.out.println("\nAwesome-o GO board: \n\n" + board.toString() + "\n");
     }
 
-    public boolean getDraw() {
-        return draw;
+    public String getWinner() {
+        return winner;
     }
 }

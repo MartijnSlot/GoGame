@@ -75,7 +75,7 @@ public class GoClient extends Thread {
      */
     void shutdown() {
         try {
-            System.out.println("Server failure. Disconnection just happened.");
+            System.out.println("Exited from server. Disconnection just happened.");
             inputFromPlayer.close();
             socket.close();
         } catch (IOException e) {

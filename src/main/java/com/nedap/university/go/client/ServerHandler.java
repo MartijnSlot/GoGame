@@ -5,6 +5,7 @@ import com.nedap.university.go.gocommands.*;
 import com.nedap.university.go.model.Position;
 import com.nedap.university.go.viewer.GoGUIIntegrator;
 import com.sun.deploy.util.SessionState;
+import javafx.application.Platform;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -36,7 +37,7 @@ public class ServerHandler extends Thread {
     public ServerHandler(GoClient client, Socket socket) {
         this.client = client;
         this.socket = socket;
-
+        this.gogui = new GoGUIIntegrator(false, true, 1);
         try {
             inputFromServer = new BufferedReader(new InputStreamReader(client.getSocket().getInputStream()));
             outputToServer = new BufferedWriter(new OutputStreamWriter(client.getSocket().getOutputStream()));
@@ -78,7 +79,8 @@ public class ServerHandler extends Thread {
             outputToServer.newLine();
             outputToServer.flush();
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println("END scores black:white ::: " + game.getScores());
+            System.out.println("You played on a crappy server. Server has died, disconnection just happened.");
         }
     }
 
@@ -115,7 +117,7 @@ public class ServerHandler extends Thread {
         int boardSize = Integer.parseInt(splitMessage[3]);
         color = splitMessage[1];
         game = new Game(boardSize);
-        gogui = new GoGUIIntegrator(false, true, boardSize);
+        gogui.setBoardSize(boardSize);
         gogui.startGUI();
         clientStatus = (color.equals("white") ? ClientStatus.INGAME_NOT_TURN : ClientStatus.INGAME_TURN);
         System.out.println("New game started on a board with dimension " + splitMessage[3] + " \nYour stone: " + splitMessage[1] + "\nYour opponent: " + splitMessage[2]);
@@ -138,7 +140,6 @@ public class ServerHandler extends Thread {
             gogui.removeStone(a.getX(), a.getY());
         }
         game.autoRemoveSet.clear();
-        game.updateTUI();
         switchTurns();
     }
 
@@ -153,18 +154,19 @@ public class ServerHandler extends Thread {
     public void handlePassed(String[] splitMessage) {
         game.passMove();
         System.out.println("Player " + splitMessage[1] + " has passed.");
-        switchTurns();
+        if (!clientStatus.equals(ClientStatus.PREGAME)) {
+            switchTurns();
+        }
     }
 
     public void handleEnd(String[] splitMessage) {
         int scoreBlack = Integer.parseInt(splitMessage[1]);
         int scoreWhite = Integer.parseInt(splitMessage[2]);
         System.out.println("Game has ended. Score black: " + scoreBlack + "\nScore white: " + scoreWhite);
-        shutdown();
         setClientStatus(ClientStatus.PREGAME);
         System.out.println("ClientStatus: " + ClientStatus.PREGAME + " Please enter your GO dim.");
         game.reset();
-        gogui.stopGUI();
+        gogui.clearBoard();
     }
 
     public void handleIncomingChat(String[] splitMessage) {

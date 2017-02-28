@@ -9,7 +9,7 @@ package com.nedap.university.go.model;
 public class Player {
 
 	private Stone stone;
-	public boolean pass;
+	private boolean pass;
 	public boolean winner;
 	
 	public Player(Stone stone) {
@@ -31,10 +31,13 @@ public class Player {
 		this.pass = true;
 	}
 
-	public void isWinner() {
-		this.winner = true;
+	public boolean isWinner() {
+		return winner;
 	}
 
+	public boolean getPass() {
+		return pass;
+	}
 }
 
 

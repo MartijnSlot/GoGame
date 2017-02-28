@@ -97,7 +97,7 @@ public class GoGameTest {
     @Test
 	public void testKO() {
 	    initializeBaseBoardThree();
-	    assertTrue(game.moveAllowed(1, 1));
+	    assertFalse(game.moveAllowed(1, 1));
 	}
 
 	@Test
