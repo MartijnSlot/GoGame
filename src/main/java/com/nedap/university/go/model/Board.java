@@ -1,8 +1,4 @@
 
-
-
-
-
 package com.nedap.university.go.model;
 
 import java.util.HashMap;
@@ -40,11 +36,6 @@ public class Board {
 	public int getDim() {
 		return dim;
 	}
-
-	public Map<Position, Point> getPoints() {
-		return points;
-	}
-
 
 	public boolean isPoint(Position pos) {
 		return (this.points.containsKey(pos));
@@ -101,6 +92,7 @@ public class Board {
 	/**
 	 * Returns all empty positions surrounding argument position.
 	 * @param cluster
+	 * @param stone
 	 * @return set
 	 */
 	private Set<Position> encapsulatedBy(Set<Position> cluster, Stone stone) {
@@ -215,6 +207,11 @@ public class Board {
 		blackScore = blackTerritory.size();
 		whiteScore = whiteTerritory.size();
 	}
+
+	public void countScoreTableflip() {
+	    blackScore = -1;
+	    whiteScore = -1;
+    }
 
 	/**
 	 * prints a string that used for creating board history

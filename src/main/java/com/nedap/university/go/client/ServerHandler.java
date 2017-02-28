@@ -2,6 +2,7 @@ package com.nedap.university.go.client;
 
 import com.nedap.university.go.controller.Game;
 import com.nedap.university.go.gocommands.*;
+import com.nedap.university.go.model.Position;
 import com.nedap.university.go.viewer.GoGUIIntegrator;
 
 import java.io.BufferedReader;
@@ -49,7 +50,6 @@ public class ServerHandler extends Thread {
         try {
             while (socket.isConnected()) {
                 String fromServer = inputFromServer.readLine();
-                System.out.println(fromServer);
                 if (fromServer != null) {
                     DetermineCommand determineCommand = new DetermineCommand();
                     Command command = determineCommand.determineClientCommand(fromServer, this);
@@ -114,8 +114,13 @@ public class ServerHandler extends Thread {
         int boardSize = Integer.parseInt(splitMessage[3]);
         color = splitMessage[1];
         game = new Game(boardSize);
+        gogui = new GoGUIIntegrator(false, true, boardSize);
+        gogui.startGUI();
         clientStatus = (color.equals("white") ? ClientStatus.INGAME_NOT_TURN : ClientStatus.INGAME_TURN);
-        System.out.println("New game started on a board with dimension " + splitMessage[3] + " \nYour stone:" + splitMessage[1] + "\nYour opponent:" + splitMessage[2]);
+        System.out.println("New game started on a board with dimension " + splitMessage[3] + " \nYour stone: " + splitMessage[1] + "\nYour opponent: " + splitMessage[2]);
+        if (color.equals("black")) {
+            System.out.println("\n\nYou can start, young padawan.");
+        }
     }
 
     /**
@@ -123,19 +128,25 @@ public class ServerHandler extends Thread {
      *
      */
     public void handleValid(String[] splitMessage) {
-// boolean white = (splitMessage[2] == "white");
+        boolean white = (splitMessage[1].equals("white"));
         int x = Integer.parseInt(splitMessage[2]);
         int y = Integer.parseInt(splitMessage[3]);
         game.doMove(x, y);
+        gogui.addStone(x, y, white);
+        for (Position a : game.autoRemoveSet) {
+            gogui.removeStone(a.getX(), a.getY());
+        }
+        game.autoRemoveSet.clear();
+        game.updateTUI();
         switchTurns();
     }
 
     public void handleInvalid(String[] splitMessage) {
         System.out.println("Game has ended due to INVALID move of player " + splitMessage[1] + "\n" + splitMessage[2]);
         shutdown();
+        game.reset();
         client.shutdown();
     }
-    //TODO ready & todo chat!
 
     public void handlePassed(String[] splitMessage) {
         game.passMove();
@@ -149,6 +160,8 @@ public class ServerHandler extends Thread {
         System.out.println("Game has ended. Score black: " + scoreBlack + "\nScore white: " + scoreWhite);
         shutdown();
         client.shutdown();
+        game.reset();
+        gogui.stopGUI();
     }
 
     public void handleIncomingChat(String[] splitMessage) {

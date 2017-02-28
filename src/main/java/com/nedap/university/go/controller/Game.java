@@ -18,10 +18,11 @@ public class Game {
 
     private int numberPlayers = 2;
     private Board board;
-    public Player[] players;
+    private Player[] players;
     private int currentPlayer;
     private Set<String> history = new HashSet<>();
     private boolean draw = false;
+    public Set<Position> autoRemoveSet = new HashSet<>();
 
     public Game(int dim) {
         board = new Board(dim);
@@ -50,7 +51,6 @@ public class Game {
         autoRemove(x, y);
         writeHistory();
         currentPlayer = (currentPlayer + 1) % numberPlayers;
-        updateTUI();
     }
 
 
@@ -72,7 +72,7 @@ public class Game {
     }
 
     /**
-     * determines the winner according to the score. TODO Now only count stones
+     * determines the winner according to the score.
      */
 
     public String getScores() {
@@ -96,13 +96,9 @@ public class Game {
      * sets a player to winner
      */
     public void tableflipMove(String color) {
-        players[color.equals("white") ? 1 : 0].winner = false;
-        players[color.equals("white") ? 1 : 0].setScore(-1);
+        players[color.equals("black") ? 1 : 0].winner = true;
         players[color.equals("white") ? 0 : 1].winner = true;
-        players[color.equals("white") ? 0 : 1].setScore(-1);
-        if(this.hasWinner()){
-            reset();
-        }
+        board.countScoreTableflip();
     }
 
     /**
@@ -128,12 +124,14 @@ public class Game {
             if (board.isPoint(p) && !board.isEmptyPoint(p) && board.numberOfLiberties(p) == 0) {
                 for (Position q : board.defendingCluster(p)) {
                     board.setPoint(q, Stone.EMPTY);
+                    autoRemoveSet.add(q);
                 }
             }
         }
         if (!board.isEmptyPoint(new Position(x, y)) && board.numberOfLiberties(new Position(x, y)) == 0) {
             for (Position r : board.defendingCluster(new Position(x, y))) {
                 board.setPoint(r, Stone.EMPTY);
+                autoRemoveSet.add(r);
             }
         }
     }
@@ -189,21 +187,8 @@ public class Game {
     /**
      * Update the state of the board to the console!
      */
-    private void updateTUI() {
+    public void updateTUI() {
         System.out.println("\nAwesome-o GO board: \n\n" + board.toString() + "\n");
-    }
-
-
-    public int getCurrentPlayer() {
-        return currentPlayer;
-    }
-
-    public Player getPlayer1() {
-        return players[0];
-    }
-
-    public Player getPlayer2() {
-        return players[1];
     }
 
     public boolean getDraw() {

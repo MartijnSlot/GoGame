@@ -10,19 +10,7 @@ package com.nedap.university.go.model;
 public enum Stone {
     
     EMPTY, BLACK, WHITE;
-    
-	/**
-     * @return the other Stone is this Stone is not EMPTY or EMPTY
-     */
-    public Stone other() {
-        if (this == BLACK) {
-            return WHITE;
-        } else if (this == WHITE) {
-            return BLACK;
-        } else {
-            return EMPTY;
-        }
-    }
+
     
     public String toString(){
     	if (this == BLACK) {
