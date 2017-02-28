@@ -34,7 +34,7 @@ public class GoClient extends Thread {
     public void run() {
         serverHandler = new ServerHandler(this, socket);
         serverHandler.start();
-        while(inputFromPlayer != null) {
+        while(inputFromPlayer != null && serverHandler.getSocket().isConnected() && serverHandler.getSocket() != null) {
             try {
                 String fromPlayer = inputFromPlayer.readLine();
                 DetermineCommand determineCommand = new DetermineCommand();
@@ -54,7 +54,7 @@ public class GoClient extends Thread {
         serverHandler.checkAndSendPlayerMove(x, y);
     }
 
-    public void handleAnythingFromPlayerExceptMove(String[] splitMessage) {
+    public void handleAnythingFromPlayerExceptMoveExitAndPlayer(String[] splitMessage) {
         serverHandler.sendPlayerCommand(splitMessage);
     }
 
@@ -75,6 +75,7 @@ public class GoClient extends Thread {
      */
     void shutdown() {
         try {
+            System.out.println("Server failure. Disconnection just happened.");
             inputFromPlayer.close();
             socket.close();
         } catch (IOException e) {

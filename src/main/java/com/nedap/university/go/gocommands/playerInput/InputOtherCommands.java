@@ -19,6 +19,6 @@ public class InputOtherCommands extends Command {
 
     @Override
     public void execute() {
-        goClient.handleAnythingFromPlayerExceptMove(splitMessage);
+        goClient.handleAnythingFromPlayerExceptMoveExitAndPlayer(splitMessage);
     }
 }
