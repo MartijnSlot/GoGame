@@ -101,7 +101,6 @@ public class ClientHandler extends Thread {
     /**
      * kicks a player from the server for making an illegal move
      *
-     * @throws IOException for socketclose
      */
     void annihilatePlayer()  {
         try {
@@ -109,7 +108,7 @@ public class ClientHandler extends Thread {
             inputFromClient.close();
             socket.close();
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println("Player annihilated due to a wrong move!");
         }
         server.eraseClient(this);
     }

@@ -201,7 +201,7 @@ public class ServerHandler extends Thread {
         writeToServer(commandToSend);
     }
 
-    public Socket getSocket() {
+    Socket getSocket() {
         return socket;
     }
 }
