@@ -12,7 +12,7 @@ import java.io.IOException;
  * @author Martijn Slot
  * @version 1.0
  */
-public class PlayGame {
+public class StartServer {
 
     public static void main(String[] args) throws IOException {
 

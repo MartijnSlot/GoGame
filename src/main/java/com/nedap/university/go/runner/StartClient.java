@@ -10,7 +10,7 @@ import java.io.IOException;
  * @author Martijn Slot
  * @version 1.0
  */
-public class SecondClientTest {
+public class StartClient {
 
     public static int serverPort;
     public static String hostName;

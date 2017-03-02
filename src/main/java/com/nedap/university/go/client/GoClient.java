@@ -131,12 +131,13 @@ public class GoClient extends Thread {
             serverHandler.sendPlayerCommand(splitMessage);
             switch (serverHandler.getClientName()) {
                 case "clownbassie":
-                    System.out.println("Clown Bassie initiated.");
+                    System.out.println("Asjemenou, Clown Bassie komt je pakken! ");
                     ai = true;
                     aiPlayer = new AiBassie();
                     inputFromPlayer = null;
                     break;
                 case "garrykasparov":
+                    System.out.println("Kasparov: goeie schaker, slechte GO-er. ");
                     ai = true;
                     aiPlayer = new AiKasparov();
                     inputFromComputerPlayer = aiPlayer.determineMove(serverHandler.getGame());
