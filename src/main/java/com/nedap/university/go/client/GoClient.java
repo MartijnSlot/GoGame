@@ -148,7 +148,6 @@ public class GoClient extends Thread {
             }
         } else {
             System.out.println("You have no name, enter PLAYER name first. ");
-
         }
     }
 
