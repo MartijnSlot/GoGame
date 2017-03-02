@@ -1,5 +1,9 @@
 package com.nedap.university.go.aiStrategies;
 
-public abstract class Strategy {	
+import com.nedap.university.go.controller.Game;
+
+public interface Strategy {
+
+    String determineMove(Game game);
 
 }

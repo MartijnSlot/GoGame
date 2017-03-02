@@ -6,19 +6,20 @@ import com.nedap.university.go.gocommands.Command;
 /**
  * Created by martijn.slot on 24/02/2017.
  */
-public class InputOtherCommands extends Command {
+public class InputGo extends Command {
 
     private final GoClient goClient;
 
-    public InputOtherCommands(String[] splitMessage, GoClient goClient) {
+    public InputGo(String[] splitMessage, GoClient goClient) {
 
         super();
         this.splitMessage = splitMessage;
         this.goClient = goClient;
+
     }
 
     @Override
     public void execute() {
-        goClient.handleAnythingFromPlayerExceptMoveExitGoChatAndPlayer(splitMessage);
+        goClient.handleGoFromPlayer(splitMessage);
     }
 }

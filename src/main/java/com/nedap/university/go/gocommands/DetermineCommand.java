@@ -114,6 +114,12 @@ public class DetermineCommand implements Protocol {
             case PLAYER:
                 command = new InputPlayer(splitMessage, goClient);
                 break;
+            case GO:
+                command = new InputGo(splitMessage, goClient);
+                break;
+            case CHAT:
+                command = new InputChat(splitMessage, goClient);
+                break;
             default:
                 command = new InputOtherCommands(splitMessage, goClient);
                 break;

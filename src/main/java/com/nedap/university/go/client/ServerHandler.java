@@ -31,7 +31,7 @@ public class ServerHandler extends Thread {
     private Socket socket;
     private GoGUIIntegrator gogui;
     private String color;
-    private ClientStatus clientStatus;
+    private ClientStatus clientStatus = ClientStatus.PREGAME;
 
 
     public ServerHandler(GoClient client, Socket socket) {
@@ -60,13 +60,26 @@ public class ServerHandler extends Thread {
 
             }
             client.shutdown();
-        } catch (IOException e1) {
+        } catch (IOException e) {
             System.out.println("No input");
         }
     }
 
     private void setClientStatus(ClientStatus clientStatus) {
         this.clientStatus = clientStatus;
+    }
+
+    public ClientStatus getClientStatus() {
+        return clientStatus;
+    }
+
+
+    public String getClientName() {
+        return clientName;
+    }
+
+    public Game getGame() {
+        return game;
     }
 
     void setClientName(String clientName) {
@@ -102,6 +115,9 @@ public class ServerHandler extends Thread {
     private void switchTurns() {
         if (clientStatus == ClientStatus.INGAME_NOT_TURN) {
             setClientStatus(ClientStatus.INGAME_TURN);
+            synchronized (client) {
+                client.notify();
+            }
             System.out.println("Your turn, " + color + " " + clientName);
         } else {
             setClientStatus(ClientStatus.INGAME_NOT_TURN);
@@ -121,6 +137,9 @@ public class ServerHandler extends Thread {
         gogui.setBoardSize(boardSize);
         gogui.startGUI();
         clientStatus = (color.equals("white") ? ClientStatus.INGAME_NOT_TURN : ClientStatus.INGAME_TURN);
+        synchronized (client) {
+            client.notify();
+        }
         System.out.println("New game started on a board with dimension " + splitMessage[3] + " \nYour stone: " + splitMessage[1] + "\nYour opponent: " + splitMessage[2]);
         if (color.equals("black")) {
             System.out.println("\n\nYou can start, young padawan.");
@@ -204,4 +223,5 @@ public class ServerHandler extends Thread {
     Socket getSocket() {
         return socket;
     }
+
 }

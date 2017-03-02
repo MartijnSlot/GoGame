@@ -61,6 +61,10 @@ public class Board {
 		return whiteScore;
 	}
 
+	public Map<Position, Point> getPoints() {
+		return points;
+	}
+
 	/**
 	 * Empties a position / removes a stone.
 	 * @param pos

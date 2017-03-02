@@ -1,5 +1,8 @@
 package com.nedap.university.go.client;
 
+import com.nedap.university.go.aiStrategies.AiBassie;
+import com.nedap.university.go.aiStrategies.AiKasparov;
+import com.nedap.university.go.aiStrategies.Strategy;
 import com.nedap.university.go.gocommands.Command;
 import com.nedap.university.go.gocommands.DetermineCommand;
 
@@ -18,6 +21,9 @@ public class GoClient extends Thread {
     private Socket socket;
     private BufferedReader inputFromPlayer;
     private ServerHandler serverHandler;
+    private boolean ai = false;
+    private String inputFromComputerPlayer;
+    private Strategy aiPlayer;
 
 
     public GoClient(String serverAddress, int serverPort) throws IOException {
@@ -34,14 +40,39 @@ public class GoClient extends Thread {
     public void run() {
         serverHandler = new ServerHandler(this, socket);
         serverHandler.start();
-        while(inputFromPlayer != null && serverHandler.getSocket().isConnected() && serverHandler.getSocket() != null) {
-            try {
-                String fromPlayer = inputFromPlayer.readLine();
-                DetermineCommand determineCommand = new DetermineCommand();
-                Command command = determineCommand.inputCommand(fromPlayer, this);
-                command.execute();
-            } catch (IOException e) {
-                e.printStackTrace();
+        while (serverHandler.getSocket().isConnected() && serverHandler.getSocket() != null) {
+            if (inputFromPlayer != null) {
+                String fromPlayer;
+                try {
+                    fromPlayer = inputFromPlayer.readLine();
+                    DetermineCommand determineCommand = new DetermineCommand();
+                    Command command = determineCommand.inputCommand(fromPlayer, this);
+                    command.execute();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            if (ai) {
+                switch (serverHandler.getClientStatus()) {
+                    case INGAME_TURN:
+                        inputFromComputerPlayer = aiPlayer.determineMove(serverHandler.getGame());
+                        DetermineCommand determineCommand = new DetermineCommand();
+                        Command command = determineCommand.inputCommand(inputFromComputerPlayer, this);
+                        command.execute();
+                        break;
+                    case INGAME_NOT_TURN:
+                    case WAITING:
+                    case PREGAME:
+                        try {
+                            synchronized (this) {
+                                this.wait();
+                            }
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                        break;
+                    default:
+                }
             }
         }
     }
@@ -54,7 +85,12 @@ public class GoClient extends Thread {
         serverHandler.checkAndSendPlayerMove(x, y);
     }
 
-    public void handleAnythingFromPlayerExceptMoveExitAndPlayer(String[] splitMessage) {
+    public void handleAnythingFromPlayerExceptMoveExitGoChatAndPlayer(String[] splitMessage) {
+        serverHandler.sendPlayerCommand(splitMessage);
+    }
+
+
+    public void handleChatCommandFromPlayer(String[] splitMessage) {
         serverHandler.sendPlayerCommand(splitMessage);
     }
 
@@ -63,11 +99,35 @@ public class GoClient extends Thread {
         shutdown();
     }
 
+    public void setAi(boolean ai) {
+        this.ai = ai;
+    }
+
     public void handlePlayerCommandFromPlayer(String[] splitMessage) {
         serverHandler.sendPlayerCommand(splitMessage);
         serverHandler.setClientName(splitMessage[1]);
     }
 
+    public void handleGoFromPlayer(String[] splitMessage) {
+        serverHandler.sendPlayerCommand(splitMessage);
+        switch (serverHandler.getClientName()) {
+            case "clownbassie":
+                System.out.println("Clown Bassie initiated.");
+                ai = true;
+                aiPlayer = new AiBassie(serverHandler);
+                inputFromPlayer = null;
+                break;
+            case "kasparov":
+                ai = true;
+                aiPlayer = new AiKasparov();
+                inputFromComputerPlayer = aiPlayer.determineMove(serverHandler.getGame());
+                inputFromPlayer = null;
+                break;
+            default:
+                break;
+
+        }
+    }
 
     /**
      * shuts down the client.
@@ -83,5 +143,6 @@ public class GoClient extends Thread {
         }
         System.exit(0);
     }
+
 }
 
