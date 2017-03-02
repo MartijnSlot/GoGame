@@ -9,6 +9,11 @@ public class AiKasparov implements Strategy {
 
     @Override
     public String determineMove(Game game) {
-        return null;
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        return "PASS";
     }
 }

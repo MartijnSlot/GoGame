@@ -68,7 +68,7 @@ public class ClientHandler extends Thread {
                 }
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println("Your stream is already kloost.");
         }
         annihilatePlayer();
     }

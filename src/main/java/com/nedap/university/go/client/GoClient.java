@@ -62,6 +62,11 @@ public class GoClient extends Thread {
     private void runAI() {
         switch (serverHandler.getClientStatus()) {
             case INGAME_TURN:
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
                 inputFromComputerPlayer = aiPlayer.determineMove(serverHandler.getGame());
                 DetermineCommand determineCommand = new DetermineCommand();
                 Command command = determineCommand.inputCommand(inputFromComputerPlayer, this);
@@ -122,22 +127,26 @@ public class GoClient extends Thread {
     }
 
     public void handleGoFromPlayer(String[] splitMessage) {
-        serverHandler.sendPlayerCommand(splitMessage);
-        switch (serverHandler.getClientName()) {
-            case "clownbassie":
-                System.out.println("Clown Bassie initiated.");
-                ai = true;
-                aiPlayer = new AiBassie();
-                inputFromPlayer = null;
-                break;
-            case "garrykasparov":
-                ai = true;
-                aiPlayer = new AiKasparov();
-                inputFromComputerPlayer = aiPlayer.determineMove(serverHandler.getGame());
-                inputFromPlayer = null;
-                break;
-            default:
-                break;
+        if (serverHandler.getClientName() != null) {
+            serverHandler.sendPlayerCommand(splitMessage);
+            switch (serverHandler.getClientName()) {
+                case "clownbassie":
+                    System.out.println("Clown Bassie initiated.");
+                    ai = true;
+                    aiPlayer = new AiBassie();
+                    inputFromPlayer = null;
+                    break;
+                case "garrykasparov":
+                    ai = true;
+                    aiPlayer = new AiKasparov();
+                    inputFromComputerPlayer = aiPlayer.determineMove(serverHandler.getGame());
+                    inputFromPlayer = null;
+                    break;
+                default:
+                    break;
+            }
+        } else {
+            System.out.println("You have no name, enter PLAYER name first. ");
 
         }
     }

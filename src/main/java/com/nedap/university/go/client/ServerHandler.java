@@ -58,7 +58,7 @@ public class ServerHandler extends Thread {
                 }
 
             }
-            client.shutdown();
+            shutdown();
         } catch (IOException e) {
             System.out.println("No input");
         }
@@ -230,6 +230,7 @@ public class ServerHandler extends Thread {
         }
         game.reset();
         gogui.clearBoard();
+        run();
     }
 
 
