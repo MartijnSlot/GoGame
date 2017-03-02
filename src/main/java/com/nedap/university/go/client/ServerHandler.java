@@ -4,7 +4,6 @@ import com.nedap.university.go.controller.Game;
 import com.nedap.university.go.gocommands.*;
 import com.nedap.university.go.model.Position;
 import com.nedap.university.go.viewer.GoGUIIntegrator;
-import com.sun.deploy.util.SessionState;
 import javafx.application.Platform;
 
 import java.io.BufferedReader;
@@ -74,12 +73,16 @@ public class ServerHandler extends Thread {
     }
 
 
-    public String getClientName() {
+    String getClientName() {
         return clientName;
     }
 
     public Game getGame() {
         return game;
+    }
+
+    Socket getSocket() {
+        return socket;
     }
 
     void setClientName(String clientName) {
@@ -102,8 +105,9 @@ public class ServerHandler extends Thread {
             outputToServer.close();
             inputFromServer.close();
             Platform.exit();
+            client.shutdown();
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println("Trying to shutdown. Everything is GOne. ");
         }
     }
 
@@ -165,10 +169,11 @@ public class ServerHandler extends Thread {
 
     public void handleInvalid(String[] splitMessage) {
         System.out.println("Game has ended due to INVALID move of player " + splitMessage[1] + "\n" + splitMessage[2]);
-        setClientStatus(ClientStatus.PREGAME);
-        System.out.println("ClientStatus: " + ClientStatus.PREGAME + " Please enter your GO dim.");
-        game.reset();
-        gogui.clearBoard();
+        if (splitMessage[1].equals(color)) {
+            shutdown();
+        } else {
+            clearGameSetPregame();
+        }
     }
 
     public void handlePassed(String[] splitMessage) {
@@ -183,10 +188,7 @@ public class ServerHandler extends Thread {
         int scoreBlack = Integer.parseInt(splitMessage[1]);
         int scoreWhite = Integer.parseInt(splitMessage[2]);
         System.out.println("Game has ended. Score black: " + scoreBlack + "\nScore white: " + scoreWhite);
-        setClientStatus(ClientStatus.PREGAME);
-        System.out.println("ClientStatus: " + ClientStatus.PREGAME + " Please enter your GO dim.");
-        game.reset();
-        gogui.clearBoard();
+        clearGameSetPregame();
     }
 
     public void handleIncomingChat(String[] splitMessage) {
@@ -197,9 +199,7 @@ public class ServerHandler extends Thread {
     public void handleTableFlipped(String[] splitMessage) {
         String chat = sewString(splitMessage);
         System.out.println(chat);
-        setClientStatus(ClientStatus.PREGAME);
-        game.reset();
-        gogui.clearBoard();
+        clearGameSetPregame();
     }
 
     public void handleWarning(String[] splitMessage) {
@@ -220,8 +220,18 @@ public class ServerHandler extends Thread {
         writeToServer(commandToSend);
     }
 
-    Socket getSocket() {
-        return socket;
+    private void clearGameSetPregame() {
+        setClientStatus(ClientStatus.PREGAME);
+        System.out.println("ClientStatus: " + ClientStatus.PREGAME + " Please enter your GO dim.");
+        try {
+            inputFromServer = new BufferedReader(new InputStreamReader(client.getSocket().getInputStream()));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        game.reset();
+        gogui.clearBoard();
     }
+
+
 
 }

@@ -13,33 +13,11 @@ import java.util.Map;
  */
 public class AiBassie implements Strategy {
 
-    private String name;
-    private ServerHandler serverHandler;
-
-    public AiBassie(ServerHandler serverHandler){
-        this.name = "clownbassie";
-        this.serverHandler = serverHandler;
+    public AiBassie(){
     }
 
     @Override
     public String determineMove(Game game) {
-        switch (serverHandler.getClientStatus()) {
-            case PREGAME:
-            case WAITING:
-                return "CHAT not in game.";
-            case INGAME_NOT_TURN:
-                return "CHAT not your turn.";
-            case INGAME_TURN:
-                return determineMoveTurn(game);
-            default:
-                break;
-        }
-        System.out.println("De AI mag hier niet komen.");
-        return null;
-    }
-
-
-    private String determineMoveTurn(Game game) {
         try {
             Thread.sleep(1000);
         } catch (InterruptedException e) {
@@ -54,5 +32,6 @@ public class AiBassie implements Strategy {
             }
         }
         return "MOVE 1 1";
+
     }
 }
